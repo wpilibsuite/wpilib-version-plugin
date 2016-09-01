@@ -10,7 +10,7 @@ import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
  * determined based on git
  */
 class WPILibVersioningPlugin implements Plugin<Project> {
-    //^(?()?(-(?<dirty>dirty))?$
+    
     // A valid version string from git describe takes the form of v1.0.0-beta-2-1-gbd478ea-dirty, where
     // everything after the v1.0.0 part is optional. Below, I break each piece out in it's own string, and then put
     // the final regex together
