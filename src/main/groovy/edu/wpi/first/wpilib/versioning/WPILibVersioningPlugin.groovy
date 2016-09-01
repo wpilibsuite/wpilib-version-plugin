@@ -121,7 +121,8 @@ class WPILibVersioningPlugin implements Plugin<Project> {
             extension.mavenLocalUrl = extension.mavenLocalUrl.isEmpty() ? "$localMavenBase/$mavenExtension/" :
                     extension.mavenLocalUrl
 
-            extension.version = getVersion(extension, evProject)
+            if (extension.generateVersion)
+                extension.version = getVersion(extension, evProject)
 
             evProject.allprojects.each { subproj ->
                 def mavenExt = subproj.repositories
@@ -152,6 +153,7 @@ class WPILibVersioningPluginExtension {
     String officialExtension = 'release'
     String mavenLocalUrl = ''
     String mavenRemoteUrl = ''
+    boolean generateVersion = true
     String version = ''
     String time
 }
