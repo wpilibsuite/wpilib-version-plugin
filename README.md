@@ -12,3 +12,14 @@ This plugin is written in Groovy, and therefore needs to have Groovy installed o
 ./gradlew build
 ```
 
+For a full list of tasks, see the output of:
+
+```bash 
+./gradlew tasks
+```
+
+Note that you will not be able to publish to plugins.gradle.org. To get a new version uploaded, contact 333fred.
+
+## Contributing
+
+See [CONTRIBUTING.MD](CONTRIBUTING.MD)
