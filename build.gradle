@@ -1,3 +1,7 @@
+plugins {
+    id "com.gradle.plugin-publish" version "0.9.5"
+}
+
 apply plugin: 'groovy'
 apply plugin: 'maven-publish'
 
@@ -12,13 +16,19 @@ repositories {
     jcenter()
 }
 
-publishing {
-    publications {
-        plugin(MavenPublication) {
-            groupId 'edu.wpi.first.wpilib.versioning'
-            artifactId 'WPILibVersioningPlugin'
-            version '0.0.1-alpha'
-            from components.java
+version = '1.0'
+group = 'edu.wpi.first.wpilib.versioning'
+
+pluginBundle {
+    website = 'https://github.com/wpilibsuite/'
+    vcsUrl = 'https://github.com/wpilibsuite/wpilib-version-plugin'
+    description = 'This plugin provides maven remote settings and versioning for the WPILib Suite FRC projects.'
+    tags = ['groovy', 'version', 'maven']
+
+    plugins {
+        greetingsPlugin {
+            id = 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin'
+            displayName = 'WPILib Version Plugin'
         }
     }
 }
