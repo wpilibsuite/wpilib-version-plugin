@@ -1,10 +1,13 @@
 package edu.wpi.first.wpilib.versioning
 
+import org.ajoberstar.grgit.Grgit
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.regex.Pattern
 
 /**
@@ -13,52 +16,112 @@ import java.util.regex.Pattern
  */
 class WPILibVersioningPlugin implements Plugin<Project> {
 
-    // A valid version string from git describe takes the form of v1.0.0-beta-2-1-gbd478ea-dirty, where
+    // A valid version string from git describe takes the form of v1.0.0-beta-2-1-gbd478ea, where
     // everything after the v1.0.0 part is optional. Below, I break each piece out in it's own string, and then put
     // the final regex together
 
     // This is the only required part of the version. This captures a 'v', then 3 numbers separated by '.'.
     // This introduces a capturing group for the main version number called 'version'.
-    private static final String mainVersion = /v(?<version>[0-9]+\.[0-9]+\.[0-9]+)/
+    static final String mainVersion = 'version'
+    private static final String mainVersionRegex = "v(?<$mainVersion>[0-9]+\\.[0-9]+\\.[0-9]+)"
 
     // This is the beta/rc qualifier. It is a '-', followed by either 'beta' or 'rc', followed by another '-', finally
     // followed by the beta/rc number. This introduces a capturing group for the qualifier number, called 'qualifier'.
-    private static final String qualifier = /-(?<qualifier>(beta|rc)-[0-9]+)/
+    static final String qualifier = 'qualifier'
+    private static final String qualifierRegex = "-(?<$qualifier>(beta|rc)-[0-9]+)"
 
     // This is the number of commits since the last annotated tag, and the commit hash of the latest commit. This is
     // a '-', followed by a number, the number of commits, followed by a '-', followed by a 'g', followed by the git
     // abbreviation of the hash of the current commit. This introduces 2 capturing groups, one for the number of
     // commits, 'commits', and one for the commit hash, 'sha'.
-    private static final String commits = /-(?<commits>[0-9]+)-(?<sha>g[a-f0-9]+)/
-
-    // This is whether or not there are changes in any of the files tracked by git at the time of version number
-    // generation. This is a '-', followed by the string 'dirty'. This introduces a capturing group, called 'dirty'.
-    private static final String dirty = /-(?<dirty>dirty)/
+    static final String commits = 'commits'
+    static final String sha = 'sha'
+    private static final String commitsRegex = /-(?<$commits>[0-9]+)-(?<$sha>g[a-f0-9]+)/
 
     // This is the final regex. mainVersion is the only element that is required. Each subpart, if it shows up, must
     // show up in full. A fully expanded version of the regex is copied below:
-    // ^v(?<version>[0-9]+\.[0-9]+\.[0-9]+)(-(?<qualifier>(beta|rc)-[0-9]+))?(-(?<commits>[0-9]+)-(?<sha>g[a-f0-9]+))?(-(?<dirty>dirty))?$
-    static final Pattern versionRegex = ~"^$mainVersion($qualifier)?($commits)?($dirty)?\$"
+    // ^v(?<version>[0-9]+\.[0-9]+\.[0-9]+)(-(?<qualifier>(beta|rc)-[0-9]+))?(-(?<commits>[0-9]+)-(?<sha>g[a-f0-9]+))?$
+    static final Pattern versionRegex = ~"^$mainVersionRegex($qualifierRegex)?($commitsRegex)?\$"
+
+    private File getGitDir(File currentDir) {
+        if (new File(currentDir, '.git').exists())
+            return currentDir
+
+        if (currentDir.parentFile == null)
+            return null
+
+        return getGitDir(currentDir.parentFile)
+    }
+
+    private String getVersion(WPILibVersioningPluginExtension extension, Project project) {
+        // Determine the version number and make it available on our plugin extension
+        def gitDir = getGitDir(project.rootProject.rootDir)
+        // If no git directory was found, print a message to the console and return an empty string
+        if (gitDir == null) {
+            println "No .git was found in $project.rootProject.rootDir, or any parent directories of that directory."
+            println "No version number generated."
+            return ''
+        }
+        def git = Grgit.open(dir: gitDir.absolutePath)
+        String tag = git.describe()
+        boolean isDirty = !git.status().isClean()
+        def match = tag =~ versionRegex
+        if (!match.matches()) {
+            println "Latest annotated tag is $tag. This does not match the expected version number pattern."
+            println "No version number was generated."
+            return ''
+        }
+
+        def versionBuilder = new StringBuilder()
+        versionBuilder.append(match.group(mainVersion))
+
+        if (match.group(qualifier) != null) {
+            versionBuilder.append('-').append(match.group(qualifier))
+        }
+
+        // For official builds, stop here. No date or repo status accounted for. Otherwise, keep appending new
+        // version elements
+        if (extension.releaseType == ReleaseType.OFFICIAL)
+            return versionBuilder.toString()
+
+        versionBuilder.append('-').append(extension.time)
+
+        if (match.group(commits) != null && match.group(sha) != null)
+            versionBuilder.append('-').append(match.group(commits))
+                    .append('-').append(match.group(sha))
+
+        if (isDirty)
+            versionBuilder.append('-dirty')
+
+        return versionBuilder.toString()
+    }
 
     @Override
     void apply(Project project) {
         project.extensions.add("WPILibVersion", WPILibVersioningPluginExtension)
+        def ext = (WPILibVersioningPluginExtension) project.extensions.getByName('WPILibVersion')
+
+        if (project.hasProperty('releaseType'))
+            ext.releaseType = ReleaseType.valueOf((String) project.property('releaseType'))
+
+        if (ext.time == null || ext.time.empty) {
+            def date = LocalDateTime.now()
+            def formatter = DateTimeFormatter.ofPattern('yyyyMMddHHmmss')
+            ext.time = date.format(formatter)
+        }
 
         project.afterEvaluate { evProject ->
             def extension = (WPILibVersioningPluginExtension) evProject.extensions.getByName("WPILibVersion")
             def mavenRemoteBase = extension.remoteUrlBase
             def localMavenBase = extension.mavenLocalBase
-            def mavenExtension = extension.releaseType == ReleaseType.ALPHA ? extension.alphaExtension : extension
-                    .releaseExtension
+            def mavenExtension = extension.releaseType == ReleaseType.DEV ? extension.devExtension : extension
+                    .officialExtension
             extension.mavenRemoteUrl = extension.mavenRemoteUrl.isEmpty() ? "$mavenRemoteBase/$mavenExtension/" :
                     extension.mavenRemoteUrl
             extension.mavenLocalUrl = extension.mavenLocalUrl.isEmpty() ? "$localMavenBase/$mavenExtension/" :
                     extension.mavenLocalUrl
 
-            // If not overridden, use the root of the root project as the location of git
-            if (extension.repositoryRoot == null || extension.repositoryRoot.isEmpty()) {
-                extension.repositoryRoot = evProject.rootProject.rootDir.absolutePath
-            }
+            extension.version = getVersion(extension, evProject)
 
             evProject.allprojects.each { subproj ->
                 def mavenExt = subproj.repositories
@@ -82,16 +145,17 @@ class WPILibVersioningPlugin implements Plugin<Project> {
 }
 
 class WPILibVersioningPluginExtension {
-    String repositoryRoot
-    ReleaseType releaseType
-    String remoteUrlBase = "http://first.wpi.edu/FRC/roborio/maven"
+    ReleaseType releaseType = ReleaseType.DEV
+    String remoteUrlBase = 'http://first.wpi.edu/FRC/roborio/maven'
     String mavenLocalBase = "${System.getProperty('user.home')}/releases/maven"
-    String alphaExtension = "development"
-    String releaseExtension = "release"
-    String mavenLocalUrl = ""
-    String mavenRemoteUrl = ""
+    String devExtension = 'development'
+    String officialExtension = 'release'
+    String mavenLocalUrl = ''
+    String mavenRemoteUrl = ''
+    String version = ''
+    String time
 }
 
 enum ReleaseType {
-    ALPHA, BETA, RC, RELEASE
+    OFFICIAL, DEV
 }
