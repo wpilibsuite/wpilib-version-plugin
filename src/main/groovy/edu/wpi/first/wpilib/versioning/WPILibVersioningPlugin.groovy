@@ -134,7 +134,7 @@ class WPILibVersioningPlugin implements Plugin<Project> {
                 }
 
                 // If the specific subproject isn't publishing maven artifacts, then don't add publication urls
-                if (project.plugins.hasPlugin(MavenPublishPlugin)) {
+                if (subproj.plugins.hasPlugin(MavenPublishPlugin)) {
                     def publishingExt = (PublishingExtension) subproj.extensions.getByType(PublishingExtension)
                     publishingExt.repositories.maven {
                         it.url = extension.mavenLocalUrl
