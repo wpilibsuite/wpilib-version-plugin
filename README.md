@@ -22,4 +22,4 @@ Note that you will not be able to publish to plugins.gradle.org. To get a new ve
 
 ## Contributing
 
-See [CONTRIBUTING.MD](CONTRIBUTING.MD)
+See [CONTRIBUTING.md](CONTRIBUTING.md)
