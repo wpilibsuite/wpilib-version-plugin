@@ -43,26 +43,8 @@ class WPILibVersioningPlugin implements Plugin<Project> {
     // ^v(?<version>[0-9]+\.[0-9]+\.[0-9]+)(-(?<qualifier>(beta|rc)-[0-9]+))?(-(?<commits>[0-9]+)-(?<sha>g[a-f0-9]+))?$
     static final Pattern versionRegex = ~"^$mainVersionRegex($qualifierRegex)?($commitsRegex)?\$"
 
-    private File getGitDir(File currentDir) {
-        if (new File(currentDir, '.git').exists())
-            return currentDir
-
-        if (currentDir.parentFile == null)
-            return null
-
-        return getGitDir(currentDir.parentFile)
-    }
-
     private String getVersion(WPILibVersioningPluginExtension extension, Project project) {
-        // Determine the version number and make it available on our plugin extension
-        def gitDir = getGitDir(project.rootProject.rootDir)
-        // If no git directory was found, print a message to the console and return an empty string
-        if (gitDir == null) {
-            println "No .git was found in $project.rootProject.rootDir, or any parent directories of that directory."
-            println "No version number generated."
-            return ''
-        }
-        def git = Grgit.open(dir: gitDir.absolutePath)
+        def git = Grgit.open(currentDir: project.rootProject.rootDir)
         String tag = git.describe()
         boolean isDirty = !git.status().isClean()
         def match = tag =~ versionRegex
