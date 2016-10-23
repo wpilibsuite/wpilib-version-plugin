@@ -62,7 +62,7 @@ class WPILibVersioningPlugin implements Plugin<Project> {
             println "No version number generated."
             return ''
         }
-        def git = Grgit.open(dir: gitDir.absolutePath)
+        def git = Grgit.open(currentDir: gitDir.absolutePath)
         String tag = git.describe()
         boolean isDirty = !git.status().isClean()
         def match = tag =~ versionRegex
