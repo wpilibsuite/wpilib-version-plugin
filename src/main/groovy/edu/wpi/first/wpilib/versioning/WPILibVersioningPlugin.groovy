@@ -73,6 +73,12 @@ class WPILibVersioningPlugin implements Plugin<Project> {
         }
 
         def versionBuilder = new StringBuilder()
+        // If this is a local build, we'll prepend 424242 to the version. This means that locally built versions will
+        // always resolve first in the tree
+        if (!project.hasProperty('localBuild') || project.property('localBuild')) {
+            versionBuilder.append('424242.')
+        }
+
         versionBuilder.append(match.group(mainVersion))
 
         if (match.group(qualifier) != null) {

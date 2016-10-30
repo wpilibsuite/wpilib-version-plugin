@@ -121,6 +121,12 @@ class WPILibVersioningPluginTests {
                 })
     }
 
+    @Test
+    public void 'Retrieves Correct Version: 424242.1.0.0 dev localBuild'() {
+        verifyProjectVersion('v1.0.0-rc-1', '20160803132333', ReleaseType.DEV, '424242.1.0.0-rc-1-20160803132333',
+                null, true)
+    }
+
     static def verifyRegex(String mainVersion, String qualifier = null, int numCommits = 0, String hash = null) {
         def strBuilder = new StringBuilder()
         strBuilder.append('v').append(mainVersion)
@@ -175,13 +181,15 @@ class WPILibVersioningPluginTests {
         if (afterTag != null)
             afterTag(project, git)
 
+        project.ext.localBuild = false
+
         project.evaluate()
         def version = project.extensions.getByName('WPILibVersion').version
         assertEquals(expectedVersion.toString(), version)
     }
 
     static def verifyProjectVersion(String gitTag, String time, ReleaseType type, String expectedVersion,
-                                    afterTag = null) {
+                                    afterTag = null, boolean isLocalBuild = false) {
         def tuple = createProjectInstanceWithGit()
         def git = tuple.first
         def project = tuple.second
@@ -194,6 +202,8 @@ class WPILibVersioningPluginTests {
         // project, creating new commits, etc.
         if (afterTag != null)
             afterTag(project, git)
+
+        project.ext.localBuild = isLocalBuild
 
         project.evaluate()
         def version = project.extensions.getByName('WPILibVersion').version
