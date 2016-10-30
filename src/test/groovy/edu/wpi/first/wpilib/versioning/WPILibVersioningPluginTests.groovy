@@ -181,7 +181,7 @@ class WPILibVersioningPluginTests {
         if (afterTag != null)
             afterTag(project, git)
 
-        project.ext.localBuild = false
+        project.ext.jenkinsBuild = false
 
         project.evaluate()
         def version = project.extensions.getByName('WPILibVersion').version
@@ -203,7 +203,8 @@ class WPILibVersioningPluginTests {
         if (afterTag != null)
             afterTag(project, git)
 
-        project.ext.localBuild = isLocalBuild
+        if (!isLocalBuild)
+            project.ext.jenkinsBuild = false
 
         project.evaluate()
         def version = project.extensions.getByName('WPILibVersion').version
