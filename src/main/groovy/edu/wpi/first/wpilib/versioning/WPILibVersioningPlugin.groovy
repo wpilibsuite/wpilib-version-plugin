@@ -25,10 +25,10 @@ class WPILibVersioningPlugin implements Plugin<Project> {
     static final String mainVersion = 'version'
     private static final String mainVersionRegex = "v(?<$mainVersion>[0-9]+\\.[0-9]+\\.[0-9]+)"
 
-    // This is the beta/rc qualifier. It is a '-', followed by either 'beta' or 'rc', followed by another '-', finally
-    // followed by the beta/rc number. This introduces a capturing group for the qualifier number, called 'qualifier'.
+    // This is the alpha/beta/rc qualifier. It is a '-', followed by 'alpha', 'beta', or 'rc', followed by another '-', finally
+    // followed by the alpha/beta/rc number. This introduces a capturing group for the qualifier number, called 'qualifier'.
     static final String qualifier = 'qualifier'
-    private static final String qualifierRegex = "-(?<$qualifier>(beta|rc)-[0-9]+)"
+    private static final String qualifierRegex = "-(?<$qualifier>(alpha|beta|rc)-[0-9]+)"
 
     // This is the number of commits since the last annotated tag, and the commit hash of the latest commit. This is
     // a '-', followed by a number, the number of commits, followed by a '-', followed by a 'g', followed by the git
@@ -40,7 +40,7 @@ class WPILibVersioningPlugin implements Plugin<Project> {
 
     // This is the final regex. mainVersion is the only element that is required. Each subpart, if it shows up, must
     // show up in full. A fully expanded version of the regex is copied below:
-    // ^v(?<version>[0-9]+\.[0-9]+\.[0-9]+)(-(?<qualifier>(beta|rc)-[0-9]+))?(-(?<commits>[0-9]+)-(?<sha>g[a-f0-9]+))?$
+    // ^v(?<version>[0-9]+\.[0-9]+\.[0-9]+)(-(?<qualifier>(alpha|beta|rc)-[0-9]+))?(-(?<commits>[0-9]+)-(?<sha>g[a-f0-9]+))?$
     static final Pattern versionRegex = ~"^$mainVersionRegex($qualifierRegex)?($commitsRegex)?\$"
 
     private File getGitDir(File currentDir) {

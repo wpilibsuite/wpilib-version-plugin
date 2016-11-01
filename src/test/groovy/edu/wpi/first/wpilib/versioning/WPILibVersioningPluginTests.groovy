@@ -68,6 +68,17 @@ class WPILibVersioningPluginTests {
     }
 
     @Test
+    public void 'Retrieves Correct Version: 1.0.0-alpha-1 official'() {
+        verifyProjectVersion('v1.0.0-alpha-1', '20160803132333', ReleaseType.OFFICIAL, "1.0.0-alpha-1")
+    }
+
+    @Test
+    public void 'Retrieves Correct Version: 1.0.0-alpha-1 dev'() {
+        verifyProjectVersion('v1.0.0-alpha-1', '20160803132333', ReleaseType.DEV, "1.0.0-alpha-1-20160803132333")
+    }
+
+
+    @Test
     public void 'Retrieves Correct Version: 1.0.0-beta-1 official'() {
         verifyProjectVersion('v1.0.0-beta-1', '20160803132333', ReleaseType.OFFICIAL, "1.0.0-beta-1")
     }
