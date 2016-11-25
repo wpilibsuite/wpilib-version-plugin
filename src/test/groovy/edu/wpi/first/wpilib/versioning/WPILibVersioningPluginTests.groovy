@@ -183,8 +183,9 @@ class WPILibVersioningPluginTests {
         def git = tuple.first
         def project = tuple.second
 
+        project.ext.jenkinsBuild = false
+
         git.tag.add(name: gitTag, annotate: true)
-        project.extensions.getByName('WPILibVersion').releaseType = type
         project.extensions.getByName('WPILibVersion').time = time
 
         // Call the afterTag closure if it's not null. This allows tests to modify the output by adding things to the
@@ -192,7 +193,8 @@ class WPILibVersioningPluginTests {
         if (afterTag != null)
             afterTag(project, git)
 
-        project.ext.jenkinsBuild = false
+        // Setting the release type will trigger the plugin. Do that last.
+        project.extensions.getByName('WPILibVersion').releaseType = type
 
         project.evaluate()
         def version = project.extensions.getByName('WPILibVersion').version
@@ -205,8 +207,10 @@ class WPILibVersioningPluginTests {
         def git = tuple.first
         def project = tuple.second
 
+        if (!isLocalBuild)
+            project.ext.jenkinsBuild = false
+
         git.tag.add(name: gitTag, annotate: true)
-        project.extensions.getByName('WPILibVersion').releaseType = type
         project.extensions.getByName('WPILibVersion').time = time
 
         // Call the afterTag closure if it's not null. This allows tests to modify the output by adding things to the
@@ -214,8 +218,8 @@ class WPILibVersioningPluginTests {
         if (afterTag != null)
             afterTag(project, git)
 
-        if (!isLocalBuild)
-            project.ext.jenkinsBuild = false
+        // Setting the releaseType will trigger the plugin. Do that last.
+        project.extensions.getByName('WPILibVersion').releaseType = type
 
         project.evaluate()
         def version = project.extensions.getByName('WPILibVersion').version

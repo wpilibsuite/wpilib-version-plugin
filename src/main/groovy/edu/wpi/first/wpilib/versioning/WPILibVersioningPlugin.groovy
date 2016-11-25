@@ -102,13 +102,44 @@ class WPILibVersioningPlugin implements Plugin<Project> {
         return versionBuilder.toString()
     }
 
+    void triggerSetup(Project project) {
+        def extension = (WPILibVersioningPluginExtension) project.extensions.getByName("WPILibVersion")
+        def mavenRemoteBase = extension.remoteUrlBase
+        def localMavenBase = extension.mavenLocalBase
+        def mavenExtension = extension.releaseType == ReleaseType.DEV ? extension.devExtension : extension
+                .officialExtension
+        extension.mavenRemoteUrl = extension.mavenRemoteUrl.isEmpty() ? "$mavenRemoteBase/$mavenExtension/" :
+                extension.mavenRemoteUrl
+        extension.mavenLocalUrl = extension.mavenLocalUrl.isEmpty() ? "$localMavenBase/$mavenExtension/" :
+                extension.mavenLocalUrl
+
+        if (extension.generateVersion)
+            extension.version = getVersion(extension, project)
+
+        project.allprojects.each { subproj ->
+            def mavenExt = subproj.repositories
+            mavenExt.maven {
+                it.url = extension.mavenLocalUrl
+            }
+            mavenExt.maven {
+                it.url = extension.mavenRemoteUrl
+            }
+
+            // If the specific subproject isn't publishing maven artifacts, then don't add publication urls
+            if (subproj.plugins.hasPlugin(MavenPublishPlugin)) {
+                def publishingExt = (PublishingExtension) subproj.extensions.getByType(PublishingExtension)
+                publishingExt.repositories.maven {
+                    it.url = extension.mavenLocalUrl
+                }
+            }
+        }
+    }
+
     @Override
     void apply(Project project) {
-        project.extensions.add("WPILibVersion", WPILibVersioningPluginExtension)
+        def extension = new WPILibVersioningPluginExtension(this, project)
+        project.extensions.add("WPILibVersion", extension)
         def ext = (WPILibVersioningPluginExtension) project.extensions.getByName('WPILibVersion')
-
-        if (project.hasProperty('releaseType'))
-            ext.releaseType = ReleaseType.valueOf((String) project.property('releaseType'))
 
         if (ext.time == null || ext.time.empty) {
             def date = LocalDateTime.now()
@@ -117,37 +148,14 @@ class WPILibVersioningPlugin implements Plugin<Project> {
         }
 
         project.afterEvaluate { evProject ->
-            def extension = (WPILibVersioningPluginExtension) evProject.extensions.getByName("WPILibVersion")
-            def mavenRemoteBase = extension.remoteUrlBase
-            def localMavenBase = extension.mavenLocalBase
-            def mavenExtension = extension.releaseType == ReleaseType.DEV ? extension.devExtension : extension
-                    .officialExtension
-            extension.mavenRemoteUrl = extension.mavenRemoteUrl.isEmpty() ? "$mavenRemoteBase/$mavenExtension/" :
-                    extension.mavenRemoteUrl
-            extension.mavenLocalUrl = extension.mavenLocalUrl.isEmpty() ? "$localMavenBase/$mavenExtension/" :
-                    extension.mavenLocalUrl
-
-            if (extension.generateVersion)
-                extension.version = getVersion(extension, evProject)
-
-            evProject.allprojects.each { subproj ->
-                def mavenExt = subproj.repositories
-                mavenExt.maven {
-                    it.url = extension.mavenLocalUrl
-                }
-                mavenExt.maven {
-                    it.url = extension.mavenRemoteUrl
-                }
-
-                // If the specific subproject isn't publishing maven artifacts, then don't add publication urls
-                if (subproj.plugins.hasPlugin(MavenPublishPlugin)) {
-                    def publishingExt = (PublishingExtension) subproj.extensions.getByType(PublishingExtension)
-                    publishingExt.repositories.maven {
-                        it.url = extension.mavenLocalUrl
-                    }
-                }
+            def evExt = (WPILibVersioningPluginExtension) evProject.extensions.getByName('WPILibVersion')
+            if (!evExt.isSetup()) {
+                triggerSetup(evProject)
             }
         }
+
+        if (project.hasProperty('releaseType'))
+            ext.releaseType = ReleaseType.valueOf((String) project.property('releaseType'))
     }
 }
 
@@ -162,6 +170,31 @@ class WPILibVersioningPluginExtension {
     boolean generateVersion = true
     String version = ''
     String time
+
+    private final WPILibVersioningPlugin m_pluginRef
+    private final Project m_project;
+    private boolean m_setup = false
+
+    WPILibVersioningPluginExtension(WPILibVersioningPlugin pluginRef, Project project) {
+        m_pluginRef = pluginRef
+        m_project = project
+    }
+
+    /**
+     * If the release type is set during the build, then we should trigger a setup immediately, as we already know
+     * everything we'll ever need to. If it isn't setup by the end of evaluation, m_setup will be false, and the plugin
+     * will manually trigger setup.
+     * @param toSet The release type to use
+     */
+    void setReleaseType(ReleaseType toSet) {
+        m_setup = true
+        releaseType = toSet
+        m_pluginRef.triggerSetup(m_project)
+    }
+
+    boolean isSetup() {
+        return m_setup
+    }
 }
 
 enum ReleaseType {

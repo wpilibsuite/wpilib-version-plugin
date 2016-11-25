@@ -16,7 +16,15 @@ repositories {
     jcenter()
 }
 
-version = '1.4'
+publishing {
+    publications {
+        plugin(MavenPublication) {
+            artifact jar
+        }
+    }
+}
+
+version = '1.5'
 group = 'edu.wpi.first.wpilib.versioning'
 
 pluginBundle {
