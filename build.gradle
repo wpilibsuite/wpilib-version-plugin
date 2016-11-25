@@ -24,14 +24,14 @@ publishing {
     }
 }
 
-version = '1.5'
+version = '1.5.1'
 group = 'edu.wpi.first.wpilib.versioning'
 
 pluginBundle {
-    website = 'https://github.com/wpilibsuite/'
+    website = 'https://github.com/wpilibsuite/wpilib-version-plugin'
     vcsUrl = 'https://github.com/wpilibsuite/wpilib-version-plugin'
     description = 'This plugin provides maven remote settings and versioning for the WPILib Suite FRC projects.'
-    tags = ['groovy', 'version', 'maven']
+    tags = ['groovy', 'version', 'maven', 'frc', 'wpilib']
 
     plugins {
         wpilibVersionPlugin {
