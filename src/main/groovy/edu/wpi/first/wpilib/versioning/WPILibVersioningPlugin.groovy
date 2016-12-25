@@ -116,6 +116,18 @@ class WPILibVersioningPlugin implements Plugin<Project> {
         if (extension.generateVersion)
             extension.version = getVersion(extension, project)
 
+        project.afterEvaluate { evProj ->
+            evProj.allprojects { subproj ->
+                // If the specific subproject isn't publishing maven artifacts, then don't add publication urls
+                if (subproj.plugins.hasPlugin(MavenPublishPlugin)) {
+                    def publishingExt = (PublishingExtension) subproj.extensions.getByType(PublishingExtension)
+                    publishingExt.repositories.maven {
+                        it.url = extension.mavenLocalUrl
+                    }
+                }
+            }
+        }
+
         project.allprojects.each { subproj ->
             def mavenExt = subproj.repositories
             mavenExt.maven {
@@ -123,14 +135,6 @@ class WPILibVersioningPlugin implements Plugin<Project> {
             }
             mavenExt.maven {
                 it.url = extension.mavenRemoteUrl
-            }
-
-            // If the specific subproject isn't publishing maven artifacts, then don't add publication urls
-            if (subproj.plugins.hasPlugin(MavenPublishPlugin)) {
-                def publishingExt = (PublishingExtension) subproj.extensions.getByType(PublishingExtension)
-                publishingExt.repositories.maven {
-                    it.url = extension.mavenLocalUrl
-                }
             }
         }
     }

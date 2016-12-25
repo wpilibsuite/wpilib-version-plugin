@@ -1,5 +1,6 @@
 plugins {
     id "com.gradle.plugin-publish" version "0.9.5"
+    id 'com.github.johnrengelman.shadow' version '1.2.4'
 }
 
 apply plugin: 'groovy'
@@ -10,6 +11,7 @@ dependencies {
     compile localGroovy()
     compile 'org.ajoberstar:grgit:1.7.0'
     testCompile 'junit:junit:4.12'
+    runtime 'org.ajoberstar:grgit:1.7.0'
 }
 
 repositories {
@@ -19,12 +21,12 @@ repositories {
 publishing {
     publications {
         plugin(MavenPublication) {
-            artifact jar
+            artifact shadowJar
         }
     }
 }
 
-version = '1.5.1'
+version = '1.6'
 group = 'edu.wpi.first.wpilib.versioning'
 
 pluginBundle {
