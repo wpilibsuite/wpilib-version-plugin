@@ -21,9 +21,10 @@ class WPILibVersioningPlugin implements Plugin<Project> {
     // the final regex together
 
     // This is the only required part of the version. This captures a 'v', then 3 numbers separated by '.'.
-    // This introduces a capturing group for the main version number called 'version'.
-    static final String mainVersion = 'version'
-    private static final String mainVersionRegex = "v(?<$mainVersion>[0-9]+\\.[0-9]+\\.[0-9]+)"
+    // This introduces a capturing group for the major version number called 'major' and the remainder called 'minor'.
+    static final String majorVersion = 'major'
+    static final String minorVersion = 'minor'
+    private static final String mainVersionRegex = "v(?<$majorVersion>[0-9]+)(?<$minorVersion>\\.[0-9]+\\.[0-9]+)"
 
     // This is the alpha/beta/rc qualifier. It is a '-', followed by 'alpha', 'beta', or 'rc', followed by another '-', finally
     // followed by the alpha/beta/rc number. This introduces a capturing group for the qualifier number, called 'qualifier'.
@@ -73,13 +74,16 @@ class WPILibVersioningPlugin implements Plugin<Project> {
         }
 
         def versionBuilder = new StringBuilder()
-        // If this is a local build, we'll prepend 424242 to the version. This means that locally built versions will
+
+        versionBuilder.append(match.group(majorVersion))
+
+        // If this is a local build, we'll prepend 424242 to the minor version. This means that locally built versions will
         // always resolve first in the tree
         if (!project.hasProperty('jenkinsBuild')) {
-            versionBuilder.append('424242.')
+            versionBuilder.append('.424242')
         }
 
-        versionBuilder.append(match.group(mainVersion))
+        versionBuilder.append(match.group(minorVersion))
 
         if (match.group(qualifier) != null) {
             versionBuilder.append('-').append(match.group(qualifier))

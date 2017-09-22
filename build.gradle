@@ -26,7 +26,7 @@ publishing {
     }
 }
 
-version = '1.6'
+version = '2.0'
 group = 'edu.wpi.first.wpilib.versioning'
 
 pluginBundle {
