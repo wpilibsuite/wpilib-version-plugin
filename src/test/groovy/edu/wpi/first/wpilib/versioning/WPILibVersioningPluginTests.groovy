@@ -47,14 +47,14 @@ class WPILibVersioningPluginTests {
 
     @Test
     public void 'Version Regex Works'() {
-        verifyRegex('1.0.0')
-        verifyRegex('1.0.0', 'beta-1')
-        verifyRegex('1.0.0', 'rc-1')
-        verifyRegex('1.0.0', null, 1, 'g01235647')
-        verifyRegex('1.0.0', 'beta-1', 0, null)
-        verifyRegex('1.0.0', 'rc-1', 0, null)
-        verifyRegex('1.0.0', 'beta-1', 1, 'g01235647')
-        verifyRegex('1.0.0', 'rc-1', 1, 'g01235647')
+        verifyRegex('1', '.0.0')
+        verifyRegex('1', '.0.0', 'beta-1')
+        verifyRegex('1', '.0.0', 'rc-1')
+        verifyRegex('1', '.0.0', null, 1, 'g01235647')
+        verifyRegex('1', '.0.0', 'beta-1', 0, null)
+        verifyRegex('1', '.0.0', 'rc-1', 0, null)
+        verifyRegex('1', '.0.0', 'beta-1', 1, 'g01235647')
+        verifyRegex('1', '.0.0', 'rc-1', 1, 'g01235647')
     }
 
     @Test
@@ -133,14 +133,14 @@ class WPILibVersioningPluginTests {
     }
 
     @Test
-    public void 'Retrieves Correct Version: 424242.1.0.0 dev localBuild'() {
-        verifyProjectVersion('v1.0.0-rc-1', '20160803132333', ReleaseType.DEV, '424242.1.0.0-rc-1-20160803132333',
+    public void 'Retrieves Correct Version: 1.424242.0.0 dev localBuild'() {
+        verifyProjectVersion('v1.0.0-rc-1', '20160803132333', ReleaseType.DEV, '1.424242.0.0-rc-1-20160803132333',
                 null, true)
     }
 
-    static def verifyRegex(String mainVersion, String qualifier = null, int numCommits = 0, String hash = null) {
+    static def verifyRegex(String majorVersion, String minorVersion, String qualifier = null, int numCommits = 0, String hash = null) {
         def strBuilder = new StringBuilder()
-        strBuilder.append('v').append(mainVersion)
+        strBuilder.append('v').append(majorVersion).append(minorVersion)
 
         if (qualifier != null) {
             strBuilder.append("-$qualifier")
@@ -152,7 +152,8 @@ class WPILibVersioningPluginTests {
 
         def match = strBuilder.toString() =~ WPILibVersioningPlugin.versionRegex
         assertTrue(match.matches())
-        assertEquals(mainVersion, match.group(WPILibVersioningPlugin.mainVersion))
+        assertEquals(majorVersion, match.group(WPILibVersioningPlugin.majorVersion))
+        assertEquals(minorVersion, match.group(WPILibVersioningPlugin.minorVersion))
         assertEquals(qualifier, match.group(WPILibVersioningPlugin.qualifier))
         assertEquals(numCommits == 0 ? null : "$numCommits".toString(), match.group(WPILibVersioningPlugin.commits))
         assertEquals(hash, match.group(WPILibVersioningPlugin.sha))
