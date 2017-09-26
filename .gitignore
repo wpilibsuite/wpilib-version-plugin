@@ -6,6 +6,8 @@
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+.project
+bin/
 
 
 ### Vim ###
