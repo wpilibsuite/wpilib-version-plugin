@@ -29,7 +29,7 @@ class WPILibVersioningPlugin implements Plugin<Project> {
     // This is the alpha/beta/rc qualifier. It is a '-', followed by 'alpha', 'beta', or 'rc', followed by another '-', finally
     // followed by the alpha/beta/rc number. This introduces a capturing group for the qualifier number, called 'qualifier'.
     static final String qualifier = 'qualifier'
-    private static final String qualifierRegex = "-(?<$qualifier>(alpha|beta|rc)-[0-9]+)"
+    private static final String qualifierRegex = "-(?<$qualifier>(alpha|beta|rc)-[0-9]+((.[0-9]+)+)?)"
 
     // This is the number of commits since the last annotated tag, and the commit hash of the latest commit. This is
     // a '-', followed by a number, the number of commits, followed by a '-', followed by a 'g', followed by the git

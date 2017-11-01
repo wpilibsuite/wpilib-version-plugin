@@ -49,11 +49,14 @@ class WPILibVersioningPluginTests {
     public void 'Version Regex Works'() {
         verifyRegex('1', '.0.0')
         verifyRegex('1', '.0.0', 'beta-1')
+        verifyRegex('1', '.0.0', 'beta-1.2')
         verifyRegex('1', '.0.0', 'rc-1')
         verifyRegex('1', '.0.0', null, 1, 'g01235647')
         verifyRegex('1', '.0.0', 'beta-1', 0, null)
+        verifyRegex('1', '.0.0', 'beta-1.2', 0, null)
         verifyRegex('1', '.0.0', 'rc-1', 0, null)
         verifyRegex('1', '.0.0', 'beta-1', 1, 'g01235647')
+        verifyRegex('1', '.0.0', 'beta-1.2', 1, 'g01235647')
         verifyRegex('1', '.0.0', 'rc-1', 1, 'g01235647')
     }
 
@@ -86,6 +89,16 @@ class WPILibVersioningPluginTests {
     @Test
     public void 'Retrieves Correct Version: 1.0.0-beta-1 dev'() {
         verifyProjectVersion('v1.0.0-beta-1', '20160803132333', ReleaseType.DEV, "1.0.0-beta-1-20160803132333")
+    }
+
+    @Test
+    public void 'Retrieves Correct Version: 1.0.0-beta-1.2 official'() {
+        verifyProjectVersion('v1.0.0-beta-1.2', '20160803132333', ReleaseType.OFFICIAL, "1.0.0-beta-1.2")
+    }
+
+    @Test
+    public void 'Retrieves Correct Version: 1.0.0-beta-1.2 dev'() {
+        verifyProjectVersion('v1.0.0-beta-1.2', '20160803132333', ReleaseType.DEV, "1.0.0-beta-1.2-20160803132333")
     }
 
     @Test
