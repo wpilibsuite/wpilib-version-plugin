@@ -1,8 +1,10 @@
 package edu.wpi.first.wpilib.versioning
 
+import groovy.transform.CompileStatic
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 
@@ -14,6 +16,7 @@ import java.util.regex.Pattern
  * Determines the remote WPILib repository to use as well as determining the version of published artifacts. This is
  * determined based on git
  */
+@CompileStatic
 class WPILibVersioningPlugin implements Plugin<Project> {
 
     // A valid version string from git describe takes the form of v1.0.0-beta-2-1-gbd478ea, where
@@ -63,7 +66,7 @@ class WPILibVersioningPlugin implements Plugin<Project> {
             println "No version number generated."
             return ''
         }
-        def git = Grgit.open(currentDir: gitDir.absolutePath)
+        Grgit git = Grgit.open(currentDir: (Object)gitDir.absolutePath)
         String tag = git.describe()
         boolean isDirty = !git.status().isClean()
         def match = tag =~ versionRegex
@@ -120,22 +123,22 @@ class WPILibVersioningPlugin implements Plugin<Project> {
         if (extension.generateVersion)
             extension.version = getVersion(extension, project)
 
-        project.allprojects.each { proj ->
-            proj.afterEvaluate { evProj ->
+        project.allprojects.each { Project proj ->
+            proj.afterEvaluate { Project evProj ->
                 // If the specific project isn't publishing maven artifacts, then don't add publication urls
                 if (evProj.plugins.hasPlugin(MavenPublishPlugin)) {
                     def publishingExt = (PublishingExtension) evProj.extensions.getByType(PublishingExtension)
-                    publishingExt.repositories.maven { repo ->
+                    publishingExt.repositories.maven { MavenArtifactRepository repo ->
                         repo.url = extension.mavenLocalUrl
                     }
                 }
             }
             def mavenExt = proj.repositories
-            mavenExt.maven {
-                it.url = extension.mavenLocalUrl
+            mavenExt.maven { MavenArtifactRepository repo ->
+                repo.url = extension.mavenLocalUrl
             }
-            mavenExt.maven {
-                it.url = extension.mavenRemoteUrl
+            mavenExt.maven { MavenArtifactRepository repo ->
+                repo.url = extension.mavenRemoteUrl
             }
         }
     }
@@ -152,7 +155,7 @@ class WPILibVersioningPlugin implements Plugin<Project> {
             ext.time = date.format(formatter)
         }
 
-        project.afterEvaluate { evProject ->
+        project.afterEvaluate { Project evProject ->
             def evExt = (WPILibVersioningPluginExtension) evProject.extensions.getByName('WPILibVersion')
             if (!evExt.isSetup()) {
                 triggerSetup(evProject)
@@ -164,6 +167,7 @@ class WPILibVersioningPlugin implements Plugin<Project> {
     }
 }
 
+@CompileStatic
 class WPILibVersioningPluginExtension {
     ReleaseType releaseType = ReleaseType.DEV
     String remoteUrlBase = 'http://first.wpi.edu/FRC/roborio/maven'
@@ -202,6 +206,7 @@ class WPILibVersioningPluginExtension {
     }
 }
 
+@CompileStatic
 enum ReleaseType {
     OFFICIAL, DEV
 }

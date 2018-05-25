@@ -14,11 +14,26 @@ This plugin is written in Groovy, and therefore needs to have Groovy installed o
 
 For a full list of tasks, see the output of:
 
-```bash 
+```bash
 ./gradlew tasks
 ```
 
 Note that you will not be able to publish to plugins.gradle.org. To get a new version uploaded, contact 333fred.
+
+To publish for local testing, use the following command.
+```bash
+./gradlew publishToMavenLocal -PlocalPublish
+```
+You will then be able to use the `plugins` block with an updated version. You will need to ensure your plugin management is setup in your `settings.gradle` as well. We use the following
+```groovy
+pluginManagement {
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+    }
+}
+```
+
 
 ## Usage
 
