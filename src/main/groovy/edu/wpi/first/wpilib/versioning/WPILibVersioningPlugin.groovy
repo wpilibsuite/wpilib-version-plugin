@@ -97,7 +97,11 @@ class WPILibVersioningPlugin implements Plugin<Project> {
         if (extension.releaseType == ReleaseType.OFFICIAL)
             return versionBuilder.toString()
 
-        versionBuilder.append('-').append(extension.time)
+        // For jenkins builds, do not append the date
+        // This simplifies jenkins publishing because multiple commit builds can't happen.
+        if (!project.hasProperty('jenkinsBuild')) {
+            versionBuilder.append('-').append(extension.time)
+        }
 
         if (match.group(commits) != null && match.group(sha) != null)
             versionBuilder.append('-').append(match.group(commits))
