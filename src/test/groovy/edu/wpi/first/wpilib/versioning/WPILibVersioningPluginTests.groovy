@@ -59,48 +59,48 @@ class WPILibVersioningPluginTests {
 
     @Test
     public void 'Retrieves Correct Version: 1.0.0 official'() {
-        verifyProjectVersion('v1.0.0', '20160803132333', ReleaseType.OFFICIAL, "1.0.0")
+        verifyProjectVersion('v1.0.0', null, ReleaseType.OFFICIAL, "1.0.0")
     }
 
     @Test
     public void 'Retrieves Correct Version: 1.0.0 dev'() {
-        verifyProjectVersion('v1.0.0', '20160803132333', ReleaseType.DEV, '1.0.0-20160803132333')
+        verifyProjectVersion('v1.0.0', null, ReleaseType.DEV, '1.0.0')
     }
 
     @Test
     public void 'Retrieves Correct Version: 1.0.0-alpha-1 official'() {
-        verifyProjectVersion('v1.0.0-alpha-1', '20160803132333', ReleaseType.OFFICIAL, "1.0.0-alpha-1")
+        verifyProjectVersion('v1.0.0-alpha-1', null, ReleaseType.OFFICIAL, "1.0.0-alpha-1")
     }
 
     @Test
     public void 'Retrieves Correct Version: 1.0.0-alpha-1 dev'() {
-        verifyProjectVersion('v1.0.0-alpha-1', '20160803132333', ReleaseType.DEV, "1.0.0-alpha-1-20160803132333")
+        verifyProjectVersion('v1.0.0-alpha-1', null, ReleaseType.DEV, "1.0.0-alpha-1")
     }
 
 
     @Test
     public void 'Retrieves Correct Version: 1.0.0-beta-1 official'() {
-        verifyProjectVersion('v1.0.0-beta-1', '20160803132333', ReleaseType.OFFICIAL, "1.0.0-beta-1")
+        verifyProjectVersion('v1.0.0-beta-1', null, ReleaseType.OFFICIAL, "1.0.0-beta-1")
     }
 
     @Test
     public void 'Retrieves Correct Version: 1.0.0-beta-1 dev'() {
-        verifyProjectVersion('v1.0.0-beta-1', '20160803132333', ReleaseType.DEV, "1.0.0-beta-1-20160803132333")
+        verifyProjectVersion('v1.0.0-beta-1', null, ReleaseType.DEV, "1.0.0-beta-1")
     }
 
     @Test
     public void 'Retrieves Correct Version: 1.0.0-rc-1 official'() {
-        verifyProjectVersion('v1.0.0-rc-1', '20160803132333', ReleaseType.OFFICIAL, "1.0.0-rc-1")
+        verifyProjectVersion('v1.0.0-rc-1', null, ReleaseType.OFFICIAL, "1.0.0-rc-1")
     }
 
     @Test
     public void 'Retrieves Correct Version: 1.0.0-rc-1 dev'() {
-        verifyProjectVersion('v1.0.0-rc-1', '20160803132333', ReleaseType.DEV, "1.0.0-rc-1-20160803132333")
+        verifyProjectVersion('v1.0.0-rc-1', null, ReleaseType.DEV, "1.0.0-rc-1")
     }
 
     @Test
     public void 'Retrieves Correct Version: 1.0.0 dev dirty'() {
-        verifyProjectVersion('v1.0.0', '20160803132333', ReleaseType.DEV, "1.0.0-20160803132333-dirty",
+        verifyProjectVersion('v1.0.0', null, ReleaseType.DEV, "1.0.0-dirty",
                 { project, git ->
                     new File(project.rootDir, "temp").createNewFile()
                 })
@@ -109,7 +109,7 @@ class WPILibVersioningPluginTests {
     @Test
     public void 'Retrieves Correct Version: 1.0.0 dev commits'() {
         def ogit
-        verifyProjectVersion('v1.0.0', '20160803132333', ReleaseType.DEV, "1.0.0-20160803132333-1-g${-> ogit.log().get(0).getAbbreviatedId()}",
+        verifyProjectVersion('v1.0.0', null, ReleaseType.DEV, "1.0.0-1-g${-> ogit.log().get(0).getAbbreviatedId()}",
                 { project, git ->
                     ogit = git
                     new File(project.rootDir, "temp").createNewFile()
@@ -121,7 +121,7 @@ class WPILibVersioningPluginTests {
     @Test
     public void 'Retrieves Correct Version: 1.0.0 dev commits dirty'() {
         def ogit
-        verifyProjectVersion('v1.0.0', '20160803132333', ReleaseType.DEV, "1.0.0-20160803132333-1-g${->ogit.log().get(0).getAbbreviatedId()}-dirty",
+        verifyProjectVersion('v1.0.0', null, ReleaseType.DEV, "1.0.0-1-g${->ogit.log().get(0).getAbbreviatedId()}-dirty",
                 { project, git ->
                     ogit = git
                     new File(project.rootDir, "temp").createNewFile()
@@ -208,11 +208,13 @@ class WPILibVersioningPluginTests {
         def git = tuple.first
         def project = tuple.second
 
-        if (!isLocalBuild)
+        if (!isLocalBuild) {
             project.ext.jenkinsBuild = false
+        } else {
+            project.extensions.getByName('WPILibVersion').time = time
+        }
 
         git.tag.add(name: gitTag, annotate: true)
-        project.extensions.getByName('WPILibVersion').time = time
 
         // Call the afterTag closure if it's not null. This allows tests to modify the output by adding things to the
         // project, creating new commits, etc.
