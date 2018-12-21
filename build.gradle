@@ -2,12 +2,12 @@ plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
     id 'groovy'
-    id "com.gradle.plugin-publish" version "0.9.10"
+    id "com.gradle.plugin-publish" version "0.10.0"
 }
 
 
 dependencies {
-    compile 'org.ajoberstar:grgit:2.0.0'
+    compile 'org.ajoberstar.grgit:grgit-core:3.0.0'
     testCompile 'junit:junit:4.12'
 }
 
@@ -15,20 +15,7 @@ repositories {
     jcenter()
 }
 
-publishing {
-    publications {
-        plugin(MavenPublication) {
-            artifact(jar) {
-                if (project.hasProperty('localPublish')) {
-                    classifier null
-                    groupId 'gradle.plugin.' + group
-                }
-            }
-        }
-    }
-}
-
-version = '2.2'
+version = '2.3'
 group = 'edu.wpi.first.wpilib.versioning'
 
 pluginBundle {
@@ -54,6 +41,6 @@ gradlePlugin {
     }
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.7'
+wrapper {
+    gradleVersion = '5.0'
 }

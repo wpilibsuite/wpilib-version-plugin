@@ -132,3 +132,8 @@ fabric.properties
 # modules.xml
 # .idea/misc.xml
 # *.ipr
+
+.classpath
+*.iml
+.settings/
+.vscode/
