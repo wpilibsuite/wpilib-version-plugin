@@ -1,7 +1,10 @@
 package edu.wpi.first.wpilib.versioning
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import org.ajoberstar.grgit.Grgit
+import org.ajoberstar.grgit.Tag
+import org.ajoberstar.grgit.operation.OpenOp
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
@@ -66,8 +69,41 @@ class WPILibVersioningPlugin implements Plugin<Project> {
             println "No version number generated."
             return ''
         }
+
         Grgit git = Grgit.open(currentDir: (Object)gitDir.absolutePath)
+        // Get the tag given by describe
         String tag = git.describe()
+
+        // Get a list of all tags
+        List<Tag> tags = git.tag.list()
+
+        Tag describeTag = null
+
+        // Find tag hash that starts with describe
+        tags.find { Tag tg ->
+            if (tag.startsWith(tg.name)) {
+                describeTag = tg
+                return true
+            }
+            return false
+        }
+
+        // If we found the tag matching describe
+        if (describeTag != null) {
+            String commitId = describeTag.commit.id
+
+            // Find all tags matching commit
+            // Sort by date
+            Tag newestTag = tags.findAll {
+                it.commit.id.equals(commitId)
+            }.sort {
+                it.dateTime
+            }.last()
+
+            // Replace describe tag with newest
+            tag = tag.replace(describeTag.name, newestTag.name)
+        }
+
         boolean isDirty = !git.status().isClean()
         def match = tag =~ versionRegex
         if (!match.matches()) {

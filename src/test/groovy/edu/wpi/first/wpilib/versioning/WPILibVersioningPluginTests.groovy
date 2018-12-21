@@ -58,48 +58,48 @@ class WPILibVersioningPluginTests {
     }
 
     @Test
-    public void 'Retrieves Correct Version: 1.0.0 official'() {
+    public void 'Retrieves Correct Version 1_0_0 official'() {
         verifyProjectVersion('v1.0.0', null, ReleaseType.OFFICIAL, "1.0.0")
     }
 
     @Test
-    public void 'Retrieves Correct Version: 1.0.0 dev'() {
+    public void 'Retrieves Correct Version 1_0_0 dev'() {
         verifyProjectVersion('v1.0.0', null, ReleaseType.DEV, '1.0.0')
     }
 
     @Test
-    public void 'Retrieves Correct Version: 1.0.0-alpha-1 official'() {
+    public void 'Retrieves Correct Version 1_0_0-alpha-1 official'() {
         verifyProjectVersion('v1.0.0-alpha-1', null, ReleaseType.OFFICIAL, "1.0.0-alpha-1")
     }
 
     @Test
-    public void 'Retrieves Correct Version: 1.0.0-alpha-1 dev'() {
+    public void 'Retrieves Correct Version 1_0_0-alpha-1 dev'() {
         verifyProjectVersion('v1.0.0-alpha-1', null, ReleaseType.DEV, "1.0.0-alpha-1")
     }
 
 
     @Test
-    public void 'Retrieves Correct Version: 1.0.0-beta-1 official'() {
+    public void 'Retrieves Correct Version 1_0_0-beta-1 official'() {
         verifyProjectVersion('v1.0.0-beta-1', null, ReleaseType.OFFICIAL, "1.0.0-beta-1")
     }
 
     @Test
-    public void 'Retrieves Correct Version: 1.0.0-beta-1 dev'() {
+    public void 'Retrieves Correct Version 1_0_0-beta-1 dev'() {
         verifyProjectVersion('v1.0.0-beta-1', null, ReleaseType.DEV, "1.0.0-beta-1")
     }
 
     @Test
-    public void 'Retrieves Correct Version: 1.0.0-rc-1 official'() {
+    public void 'Retrieves Correct Version 1_0_0-rc-1 official'() {
         verifyProjectVersion('v1.0.0-rc-1', null, ReleaseType.OFFICIAL, "1.0.0-rc-1")
     }
 
     @Test
-    public void 'Retrieves Correct Version: 1.0.0-rc-1 dev'() {
+    public void 'Retrieves Correct Version 1_0_0-rc-1 dev'() {
         verifyProjectVersion('v1.0.0-rc-1', null, ReleaseType.DEV, "1.0.0-rc-1")
     }
 
     @Test
-    public void 'Retrieves Correct Version: 1.0.0 dev dirty'() {
+    public void 'Retrieves Correct Version 1_0_0 dev dirty'() {
         verifyProjectVersion('v1.0.0', null, ReleaseType.DEV, "1.0.0-dirty",
                 { project, git ->
                     new File(project.rootDir, "temp").createNewFile()
@@ -107,7 +107,7 @@ class WPILibVersioningPluginTests {
     }
 
     @Test
-    public void 'Retrieves Correct Version: 1.0.0 dev commits'() {
+    public void 'Retrieves Correct Version 1_0_0 dev commits'() {
         def ogit
         verifyProjectVersion('v1.0.0', null, ReleaseType.DEV, "1.0.0-1-g${-> ogit.log().get(0).getAbbreviatedId()}",
                 { project, git ->
@@ -119,7 +119,7 @@ class WPILibVersioningPluginTests {
     }
 
     @Test
-    public void 'Retrieves Correct Version: 1.0.0 dev commits dirty'() {
+    public void 'Retrieves Correct Version 1_0_0 dev commits dirty'() {
         def ogit
         verifyProjectVersion('v1.0.0', null, ReleaseType.DEV, "1.0.0-1-g${->ogit.log().get(0).getAbbreviatedId()}-dirty",
                 { project, git ->
@@ -133,7 +133,7 @@ class WPILibVersioningPluginTests {
     }
 
     @Test
-    public void 'Retrieves Correct Version: 1.424242.0.0 dev localBuild'() {
+    public void 'Retrieves Correct Version 1_424242_0_0 dev localBuild'() {
         verifyProjectVersion('v1.0.0-rc-1', '20160803132333', ReleaseType.DEV, '1.424242.0.0-rc-1-20160803132333',
                 null, true)
     }
