@@ -167,18 +167,28 @@ class WPILibVersioningPlugin implements Plugin<Project> {
             proj.afterEvaluate { Project evProj ->
                 // If the specific project isn't publishing maven artifacts, then don't add publication urls
                 if (evProj.plugins.hasPlugin(MavenPublishPlugin)) {
-                    def publishingExt = (PublishingExtension) evProj.extensions.getByType(PublishingExtension)
-                    publishingExt.repositories.maven { MavenArtifactRepository repo ->
-                        repo.url = extension.mavenLocalUrl
+                    def wpilibExt = (WPILibVersioningPluginExtension) project.extensions.getByType(WPILibVersioningPluginExtension)
+                    if (wpilibExt.addMavenPublishing) {
+                        def publishingExt = (PublishingExtension) evProj.extensions.getByType(PublishingExtension)
+                        publishingExt.repositories.maven { MavenArtifactRepository repo ->
+                            repo.url = extension.mavenLocalUrl
+                        }
                     }
                 }
             }
+
+            def wpilibExt = (WPILibVersioningPluginExtension) project.extensions.getByType(WPILibVersioningPluginExtension)
+
             def mavenExt = proj.repositories
-            mavenExt.maven { MavenArtifactRepository repo ->
-                repo.url = extension.mavenLocalUrl
+            if (wpilibExt.addMavenLocal) {
+                mavenExt.maven { MavenArtifactRepository repo ->
+                    repo.url = extension.mavenLocalUrl
+                }
             }
-            mavenExt.maven { MavenArtifactRepository repo ->
-                repo.url = extension.mavenRemoteUrl
+            if (wpilibExt.addMavenRemote) {
+                mavenExt.maven { MavenArtifactRepository repo ->
+                    repo.url = extension.mavenRemoteUrl
+                }
             }
         }
     }
@@ -217,6 +227,9 @@ class WPILibVersioningPluginExtension {
     String mavenLocalUrl = ''
     String mavenRemoteUrl = ''
     boolean generateVersion = true
+    boolean addMavenLocal = true
+    boolean addMavenRemote = true
+    boolean addMavenPublishing = true
     String version = ''
     String time
 
