@@ -88,7 +88,7 @@ WPILibVersion {
      * The rest of the parameters are for WPILib internal use only. Don't set them unless you know what you're doing.
      * The default values have been copied here for documentation purposes.
      */
-    remoteUrlBase = 'http://first.wpi.edu/FRC/roborio/maven'
+    remoteUrlBase = 'https://first.wpi.edu/FRC/roborio/maven'
     mavenLocalBase = "${System.getProperty('user.home')}/releases/maven"
     devExtension = 'development'
     officialExtension = 'release'
