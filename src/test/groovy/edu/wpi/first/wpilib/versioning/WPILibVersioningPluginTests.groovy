@@ -26,23 +26,23 @@ class WPILibVersioningPluginTests {
     @Test
     public void 'Setting releaseType to alpha publishes to development repository'() {
         def project = createProjectInstance()
-        testPublishSetting(project, ReleaseType.DEV, 'releases/maven/development')
+        testPublishSetting(project, ReleaseType.DEV, 'development')
     }
 
     @Test
     public void 'Setting releaseType to beta publishes to release repository'() {
         def project = createProjectInstance()
-        testPublishSetting(project, ReleaseType.OFFICIAL, 'releases/maven/release')
+        testPublishSetting(project, ReleaseType.OFFICIAL, 'release')
     }
 
     @Test
     public void 'Setting releaseType to dev adds development dependent repos'() {
-        testRepositorySettings(createProjectInstance(), ReleaseType.DEV, 'maven/development')
+        testRepositorySettings(createProjectInstance(), ReleaseType.DEV, 'development')
     }
 
     @Test
     public void 'Setting releaseType to official adds release dependent repos'() {
-        testRepositorySettings(createProjectInstance(), ReleaseType.OFFICIAL, 'maven/release')
+        testRepositorySettings(createProjectInstance(), ReleaseType.OFFICIAL, 'release')
     }
 
     @Test
