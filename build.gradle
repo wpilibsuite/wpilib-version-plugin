@@ -2,6 +2,7 @@ plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
     id 'groovy'
+    id 'java'
     id "com.gradle.plugin-publish" version "0.10.0"
 }
 
@@ -15,7 +16,7 @@ repositories {
     jcenter()
 }
 
-version = '3.0'
+version = '4.0'
 group = 'edu.wpi.first.wpilib.versioning'
 
 pluginBundle {
