@@ -79,13 +79,15 @@ class WPILibVersioningPlugin implements Plugin<Project> {
 
         Tag describeTag = null
 
-        // Find tag hash that starts with describe
-        tags.find { Tag tg ->
-            if (tag.startsWith(tg.name)) {
-                describeTag = tg
-                return true
+        if (tag != null && tags != null) {
+            // Find tag hash that starts with describe
+            tags.find { Tag tg ->
+                if (tag.startsWith(tg.name)) {
+                    describeTag = tg
+                    return true
+                }
+                return false
             }
-            return false
         }
 
         // If we found the tag matching describe
