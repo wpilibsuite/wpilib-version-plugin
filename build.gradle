@@ -15,7 +15,7 @@ repositories {
     jcenter()
 }
 
-version = '2.5'
+version = '3.0'
 group = 'edu.wpi.first.wpilib.versioning'
 
 pluginBundle {
