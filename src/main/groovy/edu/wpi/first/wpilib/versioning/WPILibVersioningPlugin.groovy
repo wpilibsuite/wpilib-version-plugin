@@ -222,7 +222,7 @@ class WPILibVersioningPlugin implements Plugin<Project> {
 @CompileStatic
 class WPILibVersioningPluginExtension {
     ReleaseType releaseType = ReleaseType.DEV
-    String remoteUrlBase = 'https://first.wpi.edu/FRC/roborio/maven'
+    String remoteUrlBase = 'https://maven.wpilib.org/artifactory'
     String mavenLocalBase = "${System.getProperty('user.home')}/releases/maven"
     String devExtension = 'development'
     String officialExtension = 'release'
