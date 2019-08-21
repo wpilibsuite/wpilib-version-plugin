@@ -20,29 +20,7 @@ class WPILibVersioningPluginTests {
     public void 'Applying plugin creates extension'() {
         def project = createProjectInstance()
         project.evaluate()
-        assertTrue(project.extensions.getByName('WPILibVersion') instanceof WPILibVersioningPluginExtension)
-    }
-
-    @Test
-    public void 'Setting releaseType to alpha publishes to development repository'() {
-        def project = createProjectInstance()
-        testPublishSetting(project, ReleaseType.DEV, 'development')
-    }
-
-    @Test
-    public void 'Setting releaseType to beta publishes to release repository'() {
-        def project = createProjectInstance()
-        testPublishSetting(project, ReleaseType.OFFICIAL, 'release')
-    }
-
-    @Test
-    public void 'Setting releaseType to dev adds development dependent repos'() {
-        testRepositorySettings(createProjectInstance(), ReleaseType.DEV, 'development')
-    }
-
-    @Test
-    public void 'Setting releaseType to official adds release dependent repos'() {
-        testRepositorySettings(createProjectInstance(), ReleaseType.OFFICIAL, 'release')
+        assertTrue(project.extensions.getByName('wpilibVersioning') instanceof WPILibVersioningPluginExtension)
     }
 
     @Test
@@ -59,48 +37,48 @@ class WPILibVersioningPluginTests {
 
     @Test
     public void 'Retrieves Correct Version 1_0_0 official'() {
-        verifyProjectVersion('v1.0.0', null, ReleaseType.OFFICIAL, "1.0.0")
+        verifyProjectVersion('v1.0.0', null, true, "1.0.0")
     }
 
     @Test
     public void 'Retrieves Correct Version 1_0_0 dev'() {
-        verifyProjectVersion('v1.0.0', null, ReleaseType.DEV, '1.0.0')
+        verifyProjectVersion('v1.0.0', null, false, '1.0.0')
     }
 
     @Test
     public void 'Retrieves Correct Version 1_0_0-alpha-1 official'() {
-        verifyProjectVersion('v1.0.0-alpha-1', null, ReleaseType.OFFICIAL, "1.0.0-alpha-1")
+        verifyProjectVersion('v1.0.0-alpha-1', null, true, "1.0.0-alpha-1")
     }
 
     @Test
     public void 'Retrieves Correct Version 1_0_0-alpha-1 dev'() {
-        verifyProjectVersion('v1.0.0-alpha-1', null, ReleaseType.DEV, "1.0.0-alpha-1")
+        verifyProjectVersion('v1.0.0-alpha-1', null, false, "1.0.0-alpha-1")
     }
 
 
     @Test
     public void 'Retrieves Correct Version 1_0_0-beta-1 official'() {
-        verifyProjectVersion('v1.0.0-beta-1', null, ReleaseType.OFFICIAL, "1.0.0-beta-1")
+        verifyProjectVersion('v1.0.0-beta-1', null, true, "1.0.0-beta-1")
     }
 
     @Test
     public void 'Retrieves Correct Version 1_0_0-beta-1 dev'() {
-        verifyProjectVersion('v1.0.0-beta-1', null, ReleaseType.DEV, "1.0.0-beta-1")
+        verifyProjectVersion('v1.0.0-beta-1', null, false, "1.0.0-beta-1")
     }
 
     @Test
     public void 'Retrieves Correct Version 1_0_0-rc-1 official'() {
-        verifyProjectVersion('v1.0.0-rc-1', null, ReleaseType.OFFICIAL, "1.0.0-rc-1")
+        verifyProjectVersion('v1.0.0-rc-1', null, true, "1.0.0-rc-1")
     }
 
     @Test
     public void 'Retrieves Correct Version 1_0_0-rc-1 dev'() {
-        verifyProjectVersion('v1.0.0-rc-1', null, ReleaseType.DEV, "1.0.0-rc-1")
+        verifyProjectVersion('v1.0.0-rc-1', null, false, "1.0.0-rc-1")
     }
 
     @Test
     public void 'Retrieves Correct Version 1_0_0 dev dirty'() {
-        verifyProjectVersion('v1.0.0', null, ReleaseType.DEV, "1.0.0-dirty",
+        verifyProjectVersion('v1.0.0', null, false, "1.0.0-dirty",
                 { project, git ->
                     new File(project.rootDir, "temp").createNewFile()
                 })
@@ -109,7 +87,7 @@ class WPILibVersioningPluginTests {
     @Test
     public void 'Retrieves Correct Version 1_0_0 dev commits'() {
         def ogit
-        verifyProjectVersion('v1.0.0', null, ReleaseType.DEV, "1.0.0-1-g${-> ogit.log().get(0).getAbbreviatedId()}",
+        verifyProjectVersion('v1.0.0', null, false, "1.0.0-1-g${-> ogit.log().get(0).getAbbreviatedId()}",
                 { project, git ->
                     ogit = git
                     new File(project.rootDir, "temp").createNewFile()
@@ -121,7 +99,7 @@ class WPILibVersioningPluginTests {
     @Test
     public void 'Retrieves Correct Version 1_0_0 dev commits dirty'() {
         def ogit
-        verifyProjectVersion('v1.0.0', null, ReleaseType.DEV, "1.0.0-1-g${->ogit.log().get(0).getAbbreviatedId()}-dirty",
+        verifyProjectVersion('v1.0.0', null, false, "1.0.0-1-g${->ogit.log().get(0).getAbbreviatedId()}-dirty",
                 { project, git ->
                     ogit = git
                     new File(project.rootDir, "temp").createNewFile()
@@ -134,7 +112,7 @@ class WPILibVersioningPluginTests {
 
     @Test
     public void 'Retrieves Correct Version 1_424242_0_0 dev localBuild'() {
-        verifyProjectVersion('v1.0.0-rc-1', '20160803132333', ReleaseType.DEV, '1.424242.0.0-rc-1-20160803132333',
+        verifyProjectVersion('v1.0.0-rc-1', '20160803132333', false, '1.424242.0.0-rc-1-20160803132333',
                 null, true)
     }
 
@@ -150,69 +128,48 @@ class WPILibVersioningPluginTests {
             strBuilder.append("-$numCommits-$hash")
         }
 
-        def match = strBuilder.toString() =~ WPILibVersioningPlugin.versionRegex
+        def match = strBuilder.toString() =~ GitVersionProvider.versionRegex
         assertTrue(match.matches())
-        assertEquals(majorVersion, match.group(WPILibVersioningPlugin.majorVersion))
-        assertEquals(minorVersion, match.group(WPILibVersioningPlugin.minorVersion))
-        assertEquals(qualifier, match.group(WPILibVersioningPlugin.qualifier))
-        assertEquals(numCommits == 0 ? null : "$numCommits".toString(), match.group(WPILibVersioningPlugin.commits))
-        assertEquals(hash, match.group(WPILibVersioningPlugin.sha))
+        assertEquals(majorVersion, match.group(GitVersionProvider.majorVersion))
+        assertEquals(minorVersion, match.group(GitVersionProvider.minorVersion))
+        assertEquals(qualifier, match.group(GitVersionProvider.qualifier))
+        assertEquals(numCommits == 0 ? null : "$numCommits".toString(), match.group(GitVersionProvider.commits))
+        assertEquals(hash, match.group(GitVersionProvider.sha))
     }
 
-    static def testPublishSetting(Project project, ReleaseType projectType, String expectedPath) {
-        project.pluginManager.apply(MavenPublishPlugin)
-        project.extensions.getByName('WPILibVersion').releaseType = projectType
-        project.evaluate()
-        project.extensions.getByType(PublishingExtension).repositories.all {
-            def path = it.url.path
-            assertTrue("Search string is $path, expected is $expectedPath", (boolean) path.contains(expectedPath))
-        }
-    }
-
-    static def testRepositorySettings(Project project, ReleaseType projectType, String expectedPath) {
-        project.extensions.getByName('WPILibVersion').releaseType = projectType
-        project.evaluate()
-        project.repositories.all {
-            def path = it.url.toString()
-            assertTrue("Search string is $path, expected path is $expectedPath", (boolean) path.contains(expectedPath))
-        }
-    }
-
-    static def verifyProjectVersion(String gitTag, String time, ReleaseType type, GString expectedVersion,
+    static def verifyProjectVersion(String gitTag, String time, boolean releaseMode, GString expectedVersion,
                                     afterTag = null) {
         def tuple = createProjectInstanceWithGit()
         def git = tuple.first
         def project = tuple.second
 
-        project.ext.jenkinsBuild = false
+        project.extensions.getByName('wpilibVersioning').buildServerMode = true
+        project.extensions.getByName('wpilibVersioning').releaseMode = releaseMode
 
         git.tag.add(name: gitTag, annotate: true)
-        project.extensions.getByName('WPILibVersion').time = time
+        project.extensions.getByName('wpilibVersioning').time.set(time)
 
         // Call the afterTag closure if it's not null. This allows tests to modify the output by adding things to the
         // project, creating new commits, etc.
         if (afterTag != null)
             afterTag(project, git)
 
-        // Setting the release type will trigger the plugin. Do that last.
-        project.extensions.getByName('WPILibVersion').releaseType = type
-
-        project.evaluate()
-        def version = project.extensions.getByName('WPILibVersion').version
+        def version = project.extensions.getByName('wpilibVersioning').version.get()
         assertEquals(expectedVersion.toString(), version)
     }
 
-    static def verifyProjectVersion(String gitTag, String time, ReleaseType type, String expectedVersion,
+    static def verifyProjectVersion(String gitTag, String time, boolean releaseMode, String expectedVersion,
                                     afterTag = null, boolean isLocalBuild = false) {
         def tuple = createProjectInstanceWithGit()
         def git = tuple.first
         def project = tuple.second
 
-        if (!isLocalBuild) {
-            project.ext.jenkinsBuild = false
-        } else {
-            project.extensions.getByName('WPILibVersion').time = time
+        project.extensions.getByName('wpilibVersioning').buildServerMode = !isLocalBuild
+
+        if (isLocalBuild) {
+            project.extensions.getByName('wpilibVersioning').time.set(time)
         }
+        project.extensions.getByName('wpilibVersioning').releaseMode = releaseMode
 
         git.tag.add(name: gitTag, annotate: true)
 
@@ -221,11 +178,8 @@ class WPILibVersioningPluginTests {
         if (afterTag != null)
             afterTag(project, git)
 
-        // Setting the releaseType will trigger the plugin. Do that last.
-        project.extensions.getByName('WPILibVersion').releaseType = type
-
-        project.evaluate()
-        def version = project.extensions.getByName('WPILibVersion').version
+        
+        def version = project.extensions.getByName('wpilibVersioning').version.get()
         assertEquals(expectedVersion, version)
     }
 
