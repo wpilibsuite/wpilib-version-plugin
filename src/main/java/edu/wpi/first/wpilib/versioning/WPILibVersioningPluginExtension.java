@@ -7,6 +7,8 @@ import org.gradle.api.Project;
 import org.gradle.api.provider.Property;
 
 public class WPILibVersioningPluginExtension {
+    // Version and time are in properties, in order to make them easily passable to other properties
+    // and easily configurable
     private final Property<String> version;
     private final Property<String> time;
     private boolean buildServerMode = false;

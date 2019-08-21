@@ -12,7 +12,7 @@ import java.util.regex.Pattern
 
 @CompileStatic
 class GitVersionProvider implements WPILibVersionProvider {
- // A valid version string from git describe takes the form of v1.0.0-beta-2-1-gbd478ea, where
+    // A valid version string from git describe takes the form of v1.0.0-beta-2-1-gbd478ea, where
     // everything after the v1.0.0 part is optional. Below, I break each piece out in it's own string, and then put
     // the final regex together
 

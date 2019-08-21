@@ -13,6 +13,5 @@ class WPILibVersioningPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         project.extensions.create("wpilibVersioning", WPILibVersioningPluginExtension, project, new GitVersionProvider())
-
     }
 }
