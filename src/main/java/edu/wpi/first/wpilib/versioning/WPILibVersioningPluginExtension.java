@@ -11,6 +11,7 @@ public class WPILibVersioningPluginExtension {
     // and easily configurable
     private final Property<String> version;
     private final Property<String> time;
+    private boolean useAllTags = false;
     private boolean buildServerMode = false;
     private boolean releaseMode = false;
 
@@ -21,7 +22,7 @@ public class WPILibVersioningPluginExtension {
         LocalDateTime.now();
         time.set(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
         version.set(project.provider(() -> {
-            return versionProvider.getVersion(this, project);
+            return versionProvider.getVersion(this, project, this.useAllTags);
         }));
     }
 
@@ -47,5 +48,13 @@ public class WPILibVersioningPluginExtension {
 
     public void setReleaseMode(boolean mode) {
         releaseMode = mode;
+    }
+
+    public boolean isUseAllTags() {
+        return useAllTags;
+    }
+
+    public void setUseAllTags(boolean allTags) {
+        useAllTags = allTags;
     }
 }

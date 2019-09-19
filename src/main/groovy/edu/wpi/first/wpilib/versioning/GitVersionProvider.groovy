@@ -50,7 +50,7 @@ class GitVersionProvider implements WPILibVersionProvider {
         return getGitDir(currentDir.parentFile)
     }
 
-    public String getVersion(WPILibVersioningPluginExtension extension, Project project) {
+    public String getVersion(WPILibVersioningPluginExtension extension, Project project, boolean allTags) {
         // Determine the version number and make it available on our plugin extension
         def gitDir = getGitDir(project.rootProject.rootDir)
         // If no git directory was found, print a message to the console and return an empty string
@@ -62,7 +62,7 @@ class GitVersionProvider implements WPILibVersionProvider {
 
         Grgit git = Grgit.open(currentDir: (Object)gitDir.absolutePath)
         // Get the tag given by describe
-        String tag = git.describe()
+        String tag = git.describe(tags: (Object)allTags)
 
         // Get a list of all tags
         List<Tag> tags = git.tag.list()
@@ -99,7 +99,8 @@ class GitVersionProvider implements WPILibVersionProvider {
         boolean isDirty = !git.status().isClean()
         def match = tag =~ versionRegex
         if (!match.matches()) {
-            println "Latest annotated tag is $tag. This does not match the expected version number pattern."
+            String annotated = allTags ? "" : "annotated"
+            println "Latest $annotated tag is $tag. This does not match the expected version number pattern."
             println "No version number was generated."
             return ''
         }
