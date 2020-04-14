@@ -14,14 +14,14 @@ import static org.junit.Assert.assertTrue
  */
 class WPILibVersioningPluginTests {
     @Test
-    public void 'Applying plugin creates extension'() {
+    void 'Applying plugin creates extension'() {
         def project = createProjectInstance()
         project.evaluate()
         assertTrue(project.extensions.getByName('wpilibVersioning') instanceof WPILibVersioningPluginExtension)
     }
 
     @Test
-    public void 'Version Regex Works'() {
+    void 'Version Regex Works'() {
         verifyRegex('1', '.0.0')
         verifyRegex('1', '.0.0', 'beta-1')
         verifyRegex('1', '.0.0', 'rc-1')
@@ -33,48 +33,48 @@ class WPILibVersioningPluginTests {
     }
 
     @Test
-    public void 'Retrieves Correct Version 1_0_0 official'() {
+    void 'Retrieves Correct Version 1_0_0 official'() {
         verifyProjectVersion('v1.0.0', null, true, "1.0.0")
     }
 
     @Test
-    public void 'Retrieves Correct Version 1_0_0 dev'() {
+    void 'Retrieves Correct Version 1_0_0 dev'() {
         verifyProjectVersion('v1.0.0', null, false, '1.0.0')
     }
 
     @Test
-    public void 'Retrieves Correct Version 1_0_0-alpha-1 official'() {
+    void 'Retrieves Correct Version 1_0_0-alpha-1 official'() {
         verifyProjectVersion('v1.0.0-alpha-1', null, true, "1.0.0-alpha-1")
     }
 
     @Test
-    public void 'Retrieves Correct Version 1_0_0-alpha-1 dev'() {
+    void 'Retrieves Correct Version 1_0_0-alpha-1 dev'() {
         verifyProjectVersion('v1.0.0-alpha-1', null, false, "1.0.0-alpha-1")
     }
 
 
     @Test
-    public void 'Retrieves Correct Version 1_0_0-beta-1 official'() {
+    void 'Retrieves Correct Version 1_0_0-beta-1 official'() {
         verifyProjectVersion('v1.0.0-beta-1', null, true, "1.0.0-beta-1")
     }
 
     @Test
-    public void 'Retrieves Correct Version 1_0_0-beta-1 dev'() {
+    void 'Retrieves Correct Version 1_0_0-beta-1 dev'() {
         verifyProjectVersion('v1.0.0-beta-1', null, false, "1.0.0-beta-1")
     }
 
     @Test
-    public void 'Retrieves Correct Version 1_0_0-rc-1 official'() {
+    void 'Retrieves Correct Version 1_0_0-rc-1 official'() {
         verifyProjectVersion('v1.0.0-rc-1', null, true, "1.0.0-rc-1")
     }
 
     @Test
-    public void 'Retrieves Correct Version 1_0_0-rc-1 dev'() {
+    void 'Retrieves Correct Version 1_0_0-rc-1 dev'() {
         verifyProjectVersion('v1.0.0-rc-1', null, false, "1.0.0-rc-1")
     }
 
     @Test
-    public void 'Retrieves Correct Version 1_0_0 dev dirty'() {
+    void 'Retrieves Correct Version 1_0_0 dev dirty'() {
         verifyProjectVersion('v1.0.0', null, false, "1.0.0-dirty",
                 { project, git ->
                     new File(project.rootDir, "temp").createNewFile()
@@ -82,7 +82,7 @@ class WPILibVersioningPluginTests {
     }
 
     @Test
-    public void 'Retrieves Correct Version 1_0_0 dev commits'() {
+    void 'Retrieves Correct Version 1_0_0 dev commits'() {
         def ogit
         verifyProjectVersion('v1.0.0', null, false, "1.0.0-1-g${-> ogit.log().get(0).getAbbreviatedId()}",
                 { project, git ->
@@ -94,7 +94,7 @@ class WPILibVersioningPluginTests {
     }
 
     @Test
-    public void 'Retrieves Correct Version 1_0_0 dev commits dirty'() {
+    void 'Retrieves Correct Version 1_0_0 dev commits dirty'() {
         def ogit
         verifyProjectVersion('v1.0.0', null, false, "1.0.0-1-g${->ogit.log().get(0).getAbbreviatedId()}-dirty",
                 { project, git ->
@@ -108,7 +108,7 @@ class WPILibVersioningPluginTests {
     }
 
     @Test
-    public void 'Retrieves Correct Version 1_424242_0_0 dev localBuild'() {
+    void 'Retrieves Correct Version 1_424242_0_0 dev localBuild'() {
         verifyProjectVersion('v1.0.0-rc-1', '20160803132333', false, '1.424242.0.0-rc-1-20160803132333',
                 null, true)
     }
