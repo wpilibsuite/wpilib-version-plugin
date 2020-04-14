@@ -3,11 +3,8 @@ package edu.wpi.first.wpilib.versioning
 import groovy.transform.CompileStatic
 import org.ajoberstar.grgit.Grgit
 import org.ajoberstar.grgit.Tag
-import org.ajoberstar.grgit.operation.OpenOp
 import org.gradle.api.Project
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.regex.Pattern
 
 @CompileStatic
@@ -50,7 +47,7 @@ class GitVersionProvider implements WPILibVersionProvider {
         return getGitDir(currentDir.parentFile)
     }
 
-    public String getVersion(WPILibVersioningPluginExtension extension, Project project, boolean allTags) {
+    String getVersion(WPILibVersioningPluginExtension extension, Project project, boolean allTags) {
         // Determine the version number and make it available on our plugin extension
         def gitDir = getGitDir(project.rootProject.rootDir)
         // If no git directory was found, print a message to the console and return an empty string
@@ -87,7 +84,7 @@ class GitVersionProvider implements WPILibVersionProvider {
             // Find all tags matching commit
             // Sort by date
             Tag newestTag = tags.findAll {
-                it.commit.id.equals(commitId)
+                it.commit.id == commitId
             }.sort {
                 it.dateTime
             }.last()

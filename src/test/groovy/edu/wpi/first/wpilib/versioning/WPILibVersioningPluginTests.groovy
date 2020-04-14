@@ -2,8 +2,6 @@ package edu.wpi.first.wpilib.versioning
 
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.Project
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Test
 
@@ -11,7 +9,6 @@ import java.nio.file.Files
 
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertTrue
-
 /**
  * Tests for the wpilib versioning plugin
  */
