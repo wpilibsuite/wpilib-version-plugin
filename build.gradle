@@ -8,8 +8,8 @@ plugins {
 
 
 dependencies {
-    compile 'org.ajoberstar.grgit:grgit-core:3.0.0'
-    testCompile 'junit:junit:4.12'
+    implementation 'org.ajoberstar.grgit:grgit-core:3.0.0'
+    testImplementation 'junit:junit:4.12'
 }
 
 repositories {
@@ -43,5 +43,5 @@ gradlePlugin {
 }
 
 wrapper {
-    gradleVersion = '5.4.1'
+    gradleVersion = '6.3'
 }
