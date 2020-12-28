@@ -10,6 +10,7 @@ plugins {
 dependencies {
     compile 'org.ajoberstar.grgit:grgit-core:3.0.0'
     testCompile 'junit:junit:4.12'
+    testCompile 'com.github.stefanbirkner:system-lambda:1.1.1'
 }
 
 repositories {
