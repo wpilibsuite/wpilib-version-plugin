@@ -4,6 +4,7 @@ plugins {
     id 'groovy'
     id 'java'
     id "com.gradle.plugin-publish" version "0.12.0"
+    id 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin' version '4.0.2'
 }
 
 
@@ -17,7 +18,11 @@ repositories {
     jcenter()
 }
 
-version = '4.0.2'
+wpilibVersioning.buildServerMode = project.hasProperty('buildServer')
+wpilibVersioning.releaseMode = project.hasProperty('releaseMode')
+wpilibVersioning.version.finalizeValue()
+
+version = wpilibVersioning.version.get()
 group = 'edu.wpi.first.wpilib.versioning'
 
 pluginBundle {
