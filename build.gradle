@@ -21,6 +21,7 @@ repositories {
 
 wpilibVersioning.buildServerMode = project.hasProperty('buildServer')
 wpilibVersioning.releaseMode = project.hasProperty('releaseMode')
+wpilibVersioning.useAllTags = true
 wpilibVersioning.version.finalizeValue()
 
 version = wpilibVersioning.version.get()
