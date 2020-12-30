@@ -9,6 +9,8 @@ import java.nio.file.Files
 
 import static org.junit.Assert.assertEquals
 import static org.junit.Assert.assertTrue
+import static com.github.stefanbirkner.systemlambda.SystemLambda.withEnvironmentVariable
+
 /**
  * Tests for the wpilib versioning plugin
  */
@@ -111,6 +113,13 @@ class WPILibVersioningPluginTests {
     void 'Retrieves Correct Version 1_424242_0_0 dev localBuild'() {
         verifyProjectVersion('v1.0.0-rc-1', '20160803132333', false, '1.424242.0.0-rc-1-20160803132333',
                 null, true)
+    }
+
+    @Test
+    public void 'Uses GitHub provided tag instead of git'() {
+        withEnvironmentVariable("CI", "true")
+                .and("GITHUB_REF", "refs/tags/v1.0.0-beta-2")
+                .execute({ -> verifyProjectVersion('v1.0.0-beta-1', null, true, "1.0.0-beta-2") })
     }
 
     static def verifyRegex(String majorVersion, String minorVersion, String qualifier = null, int numCommits = 0, String hash = null) {

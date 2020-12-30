@@ -3,20 +3,26 @@ plugins {
     id 'maven-publish'
     id 'groovy'
     id 'java'
-    id "com.gradle.plugin-publish" version "0.10.0"
+    id "com.gradle.plugin-publish" version "0.12.0"
+    id 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin' version '4.0.2'
 }
 
 
 dependencies {
     compile 'org.ajoberstar.grgit:grgit-core:3.0.0'
     testCompile 'junit:junit:4.12'
+    testCompile 'com.github.stefanbirkner:system-lambda:1.1.1'
 }
 
 repositories {
     jcenter()
 }
 
-version = '4.0.2'
+wpilibVersioning.buildServerMode = project.hasProperty('buildServer')
+wpilibVersioning.releaseMode = project.hasProperty('releaseMode')
+wpilibVersioning.version.finalizeValue()
+
+version = wpilibVersioning.version.get()
 group = 'edu.wpi.first.wpilib.versioning'
 
 pluginBundle {

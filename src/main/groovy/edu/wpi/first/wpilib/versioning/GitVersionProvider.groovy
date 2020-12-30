@@ -47,57 +47,74 @@ class GitVersionProvider implements WPILibVersionProvider {
         return getGitDir(currentDir.parentFile)
     }
 
-    String getVersion(WPILibVersioningPluginExtension extension, Project project, boolean allTags) {
-        // Determine the version number and make it available on our plugin extension
-        def gitDir = getGitDir(project.rootProject.rootDir)
-        // If no git directory was found, print a message to the console and return an empty string
-        if (gitDir == null) {
-            println "No .git was found in $project.rootProject.rootDir, or any parent directories of that directory."
-            println "No version number generated."
-            return ''
-        }
+    public String getVersion(WPILibVersioningPluginExtension extension, Project project, boolean allTags) {
+        String tag = null
+        boolean isDirty = false;
 
-        Grgit git = Grgit.open(currentDir: (Object)gitDir.absolutePath)
-        // Get the tag given by describe
-        String tag = git.describe(tags: (Object)allTags)
+        // Check to see if we are running on CI
+        if (System.getenv("CI") == "true") {
+            def githubRef = System.getenv("GITHUB_REF")
+            if (extension.releaseMode && githubRef.startsWith("refs/tags/")) {
+                tag = githubRef.replace("refs/tags/", "")
 
-        // Get a list of all tags
-        List<Tag> tags = git.tag.list()
-
-        Tag describeTag = null
-
-        if (tag != null && tags != null) {
-            // Find tag hash that starts with describe
-            tags.find { Tag tg ->
-                if (tag.startsWith(tg.name)) {
-                    describeTag = tg
-                    return true
-                }
-                return false
+                println "GitHub provided a tag via the GITHUB_REF environment variable: $githubRef"
             }
         }
 
-        // If we found the tag matching describe
-        if (describeTag != null) {
-            String commitId = describeTag.commit.id
+        if (tag == null) {
+            // We are not on CI or CI failed to provide a tag, need to use git
+            // Determine the version number and make it available on our plugin extension
+            def gitDir = getGitDir(project.rootProject.rootDir)
+            // If no git directory was found, print a message to the console and return an empty string
+            if (gitDir == null) {
+                println "No .git was found in $project.rootProject.rootDir, or any parent directories of that directory."
+                println "No version number generated."
+                return ''
+            }
 
-            // Find all tags matching commit
-            // Sort by date
-            Tag newestTag = tags.findAll {
-                it.commit.id == commitId
-            }.sort {
-                it.dateTime
-            }.last()
+            Grgit git = Grgit.open(currentDir: (Object)gitDir.absolutePath)
+            // Get the tag given by describe
+            tag = git.describe(tags: (Object)allTags)
 
-            // Replace describe tag with newest
-            tag = tag.replace(describeTag.name, newestTag.name)
+            // Get a list of all tags
+            List<Tag> tags = git.tag.list()
+
+            Tag describeTag = null
+
+            if (tag != null && tags != null) {
+                // Find tag hash that starts with describe
+                tags.find { Tag tg ->
+                    if (tag.startsWith(tg.name)) {
+                        describeTag = tg
+                        return true
+                    }
+                    return false
+                }
+            }
+
+            // If we found the tag matching describe
+            if (describeTag != null) {
+                String commitId = describeTag.commit.id
+
+
+                // Find all tags matching commit
+                // Sort by date
+                Tag newestTag = tags.findAll {
+                    it.commit.id.equals(commitId)
+                }.sort {
+                    it.dateTime
+                }.last()
+
+                // Replace describe tag with newest
+                tag = tag.replace(describeTag.name, newestTag.name)
+            }
+
+            isDirty = !git.status().isClean()
         }
 
-        boolean isDirty = !git.status().isClean()
         def match = tag =~ versionRegex
         if (!match.matches()) {
-            String annotated = allTags ? "" : "annotated"
-            println "Latest $annotated tag is $tag. This does not match the expected version number pattern."
+            println "Tag is $tag. This does not match the expected version number pattern."
             println "No version number was generated."
             return ''
         }
