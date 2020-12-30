@@ -1,6 +1,6 @@
 # WPILib Versioning Plugin
 
-[![Build Status](https://dev.azure.com/wpilib/BuildSupport/_apis/build/status/wpilibsuite.wpilib-version-plugin?branchName=master)](https://dev.azure.com/wpilib/BuildSupport/_build/latest?definitionId=31&branchName=master)
+![CI](https://github.com/wpilibsuite/wpilib-version-plugin/workflows/CI/badge.svg)
 
 This Gradle plugin is responsible for determining what repositories the build should be getting Maven dependencies from, where it should be publishing Maven dependencies to, and for generating a version number scheme we use in WPILib. This is used by most of the other WPILib projects, and can be used by third party projects to automate selecting of which repositories to use.
 
