@@ -16,7 +16,7 @@ dependencies {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 wpilibVersioning.buildServerMode = project.hasProperty('buildServer')
