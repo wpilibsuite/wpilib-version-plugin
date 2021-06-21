@@ -21,9 +21,7 @@ public class WPILibVersioningPluginExtension {
 
         LocalDateTime.now();
         time.set(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
-        version.set(project.provider(() -> {
-            return versionProvider.getVersion(this, project, this.useAllTags);
-        }));
+        version.set(project.provider(() -> versionProvider.getVersion(this, project, this.useAllTags)));
     }
 
     public Property<String> getTime() {
