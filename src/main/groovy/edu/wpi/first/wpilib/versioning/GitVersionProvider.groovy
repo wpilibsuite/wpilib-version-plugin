@@ -3,11 +3,8 @@ package edu.wpi.first.wpilib.versioning
 import groovy.transform.CompileStatic
 import org.ajoberstar.grgit.Grgit
 import org.ajoberstar.grgit.Tag
-import org.ajoberstar.grgit.operation.OpenOp
 import org.gradle.api.Project
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.regex.Pattern
 
 @CompileStatic
@@ -98,6 +95,7 @@ class GitVersionProvider implements WPILibVersionProvider {
             // If we found the tag matching describe
             if (describeTag != null) {
                 String commitId = describeTag.commit.id
+
 
                 // Find all tags matching commit
                 // Sort by date
