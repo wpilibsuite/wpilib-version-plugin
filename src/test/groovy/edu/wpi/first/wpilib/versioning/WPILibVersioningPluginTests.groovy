@@ -3,7 +3,10 @@ package edu.wpi.first.wpilib.versioning
 import org.ajoberstar.grgit.Grgit
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.contrib.java.lang.system.EnvironmentVariables
 
 import java.nio.file.Files
 
@@ -15,6 +18,14 @@ import static com.github.stefanbirkner.systemlambda.SystemLambda.withEnvironment
  * Tests for the wpilib versioning plugin
  */
 class WPILibVersioningPluginTests {
+    @Rule
+    public final EnvironmentVariables environmentVariables = new EnvironmentVariables()
+
+    @Before
+    void before() {
+        environmentVariables.clear("CI", "GITHUB_REF")
+    }
+
     @Test
     void 'Applying plugin creates extension'() {
         def project = createProjectInstance()
