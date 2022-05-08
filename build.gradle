@@ -16,7 +16,9 @@ dependencies {
 }
 
 repositories {
-    jcenter()
+    maven {
+        url = 'https://frcmaven.wpi.edu/artifactory/ex-mvn'
+    }
 }
 
 wpilibVersioning.buildServerMode = project.hasProperty('buildServer')
