@@ -195,7 +195,7 @@ class WPILibVersioningPluginTests {
         if (afterTag != null)
             afterTag(project, git)
 
-        
+
         def version = project.extensions.getByName('wpilibVersioning').version.get()
         assertEquals(expectedVersion, version)
     }
@@ -209,6 +209,10 @@ class WPILibVersioningPluginTests {
     static def createProjectInstanceWithGit() {
         def tempDir = Files.createTempDirectory('versionPluginTest')
         def git = Grgit.init(dir: tempDir.toString())
+        def ignoreFile = new File(tempDir.toFile(), ".gitignore")
+        ignoreFile.createNewFile()
+        ignoreFile.text = "userHome"
+        git.add(patterns: ['.gitignore'])
         git.commit(message: 'initial commit')
         def project = ProjectBuilder.builder().withProjectDir(tempDir.toFile()).build()
         project.pluginManager.apply 'edu.wpi.first.wpilib.versioning.WPILibVersioningPlugin'
