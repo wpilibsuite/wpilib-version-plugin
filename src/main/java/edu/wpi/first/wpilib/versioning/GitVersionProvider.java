@@ -132,10 +132,12 @@ public class GitVersionProvider implements WPILibVersionProvider {
             isDirty = !git.status().isClean();
         }
 
-        Matcher match = versionRegex.matcher(tag);
+        Matcher match = null;
+        if (tag != null) {
+            match = versionRegex.matcher(tag);
+        }
 
-        //def match = tag =~ versionRegex
-        if (!match.matches()) {
+        if (match == null || !match.matches()) {
             System.out.println("Tag is " + tag + ". This does not match the expected version number pattern.");
             System.out.println("No version number was generated.");
             return "";

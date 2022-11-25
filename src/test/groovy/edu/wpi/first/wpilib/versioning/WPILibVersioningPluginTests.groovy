@@ -34,6 +34,15 @@ class WPILibVersioningPluginTests {
     }
 
     @Test
+    void 'Applying plugin with no tag works'() {
+        def project = createProjectInstanceWithGit().second
+        project.evaluate()
+        assertTrue(project.extensions.getByName('wpilibVersioning') instanceof WPILibVersioningPluginExtension)
+        WPILibVersioningPluginExtension ext = project.extensions.getByName('wpilibVersioning')
+        ext.getVersion().get()
+    }
+
+    @Test
     void 'Version Regex Works'() {
         verifyRegex('1', '.0.0')
         verifyRegex('1', '.0.0', 'beta-1')

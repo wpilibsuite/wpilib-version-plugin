@@ -20,7 +20,7 @@ repositories {
     }
 }
 
-version = '2023.0.0'
+version = '2023.0.1'
 group = 'edu.wpi.first.wpilib.versioning'
 
 pluginBundle {
