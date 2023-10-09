@@ -142,6 +142,30 @@ class WPILibVersioningPluginTests {
                 .execute({ -> verifyProjectVersion('v1.0.0-beta-1', null, true, "1.0.0-beta-2") })
     }
 
+    @Test
+    public void 'Retrieves empty if annotated tag does not match'() {
+        verifyProjectVersion('v1.0.0', null, true, "",
+                { project, git ->
+                    new File(project.rootDir, "temp").createNewFile()
+                    git.add(patterns: ['temp'])
+                    git.commit(message: 'second commit')
+                    git.tag.add(name: 'NewInvalidTag', annotate: true)
+                })
+    }
+
+    @Test
+    public void 'Retrieves Correct Version 1_0_0 when newest tag is invalid if matchGlob is set'() {
+        verifyProjectVersion('v1.0.0', null, true, "1.0.0",
+                { project, git ->
+                    new File(project.rootDir, "temp").createNewFile()
+                    git.add(patterns: ['temp'])
+                    git.commit(message: 'second commit')
+                    git.tag.add(name: 'NewInvalidTag', annotate: true)
+
+                    project.extensions.getByName('wpilibVersioning').addMatchGlob("[v]*[.]*[.]*")
+                })
+    }
+
     static def verifyRegex(String majorVersion, String minorVersion, String qualifier = null, int numCommits = 0, String hash = null) {
         def strBuilder = new StringBuilder()
         strBuilder.append('v').append(majorVersion).append(minorVersion)
@@ -206,6 +230,7 @@ class WPILibVersioningPluginTests {
 
 
         def version = project.extensions.getByName('wpilibVersioning').version.get()
+        println("Obtained Version: " + version)
         assertEquals(expectedVersion, version)
     }
 

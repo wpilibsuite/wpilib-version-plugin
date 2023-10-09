@@ -2,6 +2,8 @@ package edu.wpi.first.wpilib.versioning;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.gradle.api.Project;
 import org.gradle.api.provider.Property;
@@ -14,6 +16,7 @@ public class WPILibVersioningPluginExtension {
     private boolean useAllTags = false;
     private boolean buildServerMode = false;
     private boolean releaseMode = false;
+    private List<String> matchGlobs = new ArrayList<>();
 
     public WPILibVersioningPluginExtension(Project project, WPILibVersionProvider versionProvider) {
         version = project.getObjects().property(String.class);
@@ -21,7 +24,7 @@ public class WPILibVersioningPluginExtension {
 
         LocalDateTime.now();
         time.set(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
-        version.set(project.provider(() -> versionProvider.getVersion(this, project, this.useAllTags)));
+        version.set(project.provider(() -> versionProvider.getVersion(this, project, this.useAllTags, this.matchGlobs)));
     }
 
     public Property<String> getTime() {
@@ -54,5 +57,13 @@ public class WPILibVersioningPluginExtension {
 
     public void setUseAllTags(boolean allTags) {
         useAllTags = allTags;
+    }
+
+    public void setMatchGlobs(List<String> globList) {
+        matchGlobs = globList;
+    }
+
+    public void addMatchGlob(String glob) {
+        matchGlobs.add(glob);
     }
 }
