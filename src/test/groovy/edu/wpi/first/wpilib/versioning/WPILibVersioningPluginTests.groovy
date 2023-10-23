@@ -230,7 +230,6 @@ class WPILibVersioningPluginTests {
 
 
         def version = project.extensions.getByName('wpilibVersioning').version.get()
-        println("Obtained Version: " + version)
         assertEquals(expectedVersion, version)
     }
 
