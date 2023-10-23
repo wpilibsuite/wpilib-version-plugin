@@ -65,7 +65,7 @@ public class GitVersionProvider implements WPILibVersionProvider {
         return getGitDir(currentDir.getParentFile());
     }
 
-    public String getVersion(WPILibVersioningPluginExtension extension, Project project, boolean allTags) {
+    public String getVersion(WPILibVersioningPluginExtension extension, Project project, boolean allTags, List<String> matchGlobs) {
         String tag = null;
         boolean isDirty = false;
 
@@ -93,7 +93,7 @@ public class GitVersionProvider implements WPILibVersionProvider {
             }
 
             Map<String, Object> openArgs = Map.of("currentDir", (Object)gitDir.getAbsolutePath());
-            Map<String, Object> describeArgs = Map.of("tags", (Object)allTags);
+            Map<String, Object> describeArgs = Map.of("tags", (Object)allTags, "match", (Object)matchGlobs);
 
             Grgit git = Grgit.open(openArgs);
             // Get the tag given by describe
