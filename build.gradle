@@ -61,5 +61,5 @@ tasks.withType(JavaCompile) {
 }
 
 wrapper {
-    gradleVersion = '7.5.1'
+    gradleVersion = '8.5'
 }
