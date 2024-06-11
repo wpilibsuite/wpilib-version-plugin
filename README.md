@@ -6,7 +6,7 @@ This Gradle plugin is responsible for determining what repositories the build sh
 
 ## Building
 
-This plugin is written in Groovy, and therefore needs to have Groovy installed on your local machine. Groovy is available from here: http://www.groovy-lang.org/. Building is accomplished with Gradle, as with the rest of WPILib. To build, run the following command:
+This plugin is written in Java, and therefore needs to have Java installed on your local machine. Java is available from [here](https://adoptium.net/en-GB/temurin/releases/?version=11) or on Ubuntu by running `sudo apt install openjdk-11-jdk`. Building is accomplished with Gradle, as with the rest of WPILib. To build, run the following command:
 
 ```bash
 ./gradlew build
