@@ -20,7 +20,7 @@ repositories {
     }
 }
 
-version = '2024.0.0'
+version = '2025.0.0'
 group = 'edu.wpi.first.wpilib.versioning'
 
 pluginBundle {
@@ -61,5 +61,5 @@ tasks.withType(JavaCompile) {
 }
 
 wrapper {
-    gradleVersion = '7.5.1'
+    gradleVersion = '8.11.1'
 }

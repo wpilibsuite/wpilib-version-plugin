@@ -3,30 +3,47 @@ package edu.wpi.first.wpilib.versioning;
 import org.ajoberstar.grgit.Grgit;
 import org.ajoberstar.grgit.Tag;
 import org.gradle.api.Project;
+import org.gradle.api.problems.ProblemReporter;
+import org.gradle.api.problems.Severity;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GitVersionProvider implements WPILibVersionProvider {
-    // A valid version string from git describe takes the form of v1.0.0-beta-2-1-gbd478ea, where
-    // everything after the v1.0.0 part is optional. Below, I break each piece out in it's own string, and then put
+    private final ProblemReporter problemReporter;
+
+    public GitVersionProvider(ProblemReporter reporter) {
+        this.problemReporter = reporter;
+    }
+
+    // A valid version string from git describe takes the form of
+    // v1.0.0-beta-2-1-gbd478ea, where
+    // everything after the v1.0.0 part is optional. Below, I break each piece out
+    // in it's own string, and then put
     // the final regex together
 
-    // This is the only required part of the version. This captures a 'v', then 3 numbers separated by '.'.
-    // This introduces a capturing group for the major version number called 'major' and the remainder called 'minor'.
+    // This is the only required part of the version. This captures a 'v', then 3
+    // numbers separated by '.'.
+    // This introduces a capturing group for the major version number called 'major'
+    // and the remainder called 'minor'.
     static final String majorVersion = "major";
     static final String minorVersion = "minor";
-    private static final String mainVersionRegex = "v(?<" + majorVersion + ">[0-9]+)(?<" + minorVersion + ">\\.[0-9]+\\.[0-9]+)";
+    private static final String mainVersionRegex = "v(?<" + majorVersion + ">[0-9]+)(?<" + minorVersion
+            + ">\\.[0-9]+\\.[0-9]+)";
 
     public static String getMainVersionRegex() {
         return mainVersionRegex;
     }
 
-    // This is the alpha/beta/rc qualifier. It is a '-', followed by 'alpha', 'beta', or 'rc', followed by another '-', finally
-    // followed by the alpha/beta/rc number. This introduces a capturing group for the qualifier number, called 'qualifier'.
+    // This is the alpha/beta/rc qualifier. It is a '-', followed by 'alpha',
+    // 'beta', or 'rc', followed by another '-', finally
+    // followed by the alpha/beta/rc number. This introduces a capturing group for
+    // the qualifier number, called 'qualifier'.
     static final String qualifier = "qualifier";
     private static final String qualifierRegex = "-(?<" + qualifier + ">(alpha|beta|rc)-[0-9]+)";
 
@@ -34,9 +51,12 @@ public class GitVersionProvider implements WPILibVersionProvider {
         return qualifierRegex;
     }
 
-    // This is the number of commits since the last annotated tag, and the commit hash of the latest commit. This is
-    // a '-', followed by a number, the number of commits, followed by a '-', followed by a 'g', followed by the git
-    // abbreviation of the hash of the current commit. This introduces 2 capturing groups, one for the number of
+    // This is the number of commits since the last annotated tag, and the commit
+    // hash of the latest commit. This is
+    // a '-', followed by a number, the number of commits, followed by a '-',
+    // followed by a 'g', followed by the git
+    // abbreviation of the hash of the current commit. This introduces 2 capturing
+    // groups, one for the number of
     // commits, 'commits', and one for the commit hash, 'sha'.
     static final String commits = "commits";
     static final String sha = "sha";
@@ -46,10 +66,12 @@ public class GitVersionProvider implements WPILibVersionProvider {
         return commitsRegex;
     }
 
-    // This is the final regex. mainVersion is the only element that is required. Each subpart, if it shows up, must
+    // This is the final regex. mainVersion is the only element that is required.
+    // Each subpart, if it shows up, must
     // show up in full. A fully expanded version of the regex is copied below:
     // ^v(?<major>[0-9]+)(?<minor>\.[0-9]+\.[0-9]+)(-(?<qualifier>(alpha|beta|rc)-[0-9]+))?(-(?<commits>[0-9]+)-(?<sha>g[a-f0-9]+))?$
-    static final Pattern versionRegex = Pattern.compile( "^" + mainVersionRegex + "(" + qualifierRegex + ")?(" + commitsRegex + ")?$");
+    static final Pattern versionRegex = Pattern
+            .compile("^" + mainVersionRegex + "(" + qualifierRegex + ")?(" + commitsRegex + ")?$");
 
     public static Pattern getVersionRegex() {
         return versionRegex;
@@ -65,7 +87,8 @@ public class GitVersionProvider implements WPILibVersionProvider {
         return getGitDir(currentDir.getParentFile());
     }
 
-    public String getVersion(WPILibVersioningPluginExtension extension, Project project, boolean allTags, List<String> matchGlobs) {
+    public String getVersion(WPILibVersioningPluginExtension extension, Project project, boolean allTags,
+            List<String> matchGlobs) {
         String tag = null;
         boolean isDirty = false;
 
@@ -85,15 +108,17 @@ public class GitVersionProvider implements WPILibVersionProvider {
             // We are not on CI or CI failed to provide a tag, need to use git
             // Determine the version number and make it available on our plugin extension
             File gitDir = getGitDir(project.getRootProject().getRootDir());
-            // If no git directory was found, print a message to the console and return an empty string
+            // If no git directory was found, print a message to the console and return an
+            // empty string
             if (gitDir == null) {
-                System.out.println("No .git was found in " + project.getRootProject().getRootDir() + ", or any parent directories of that directory.");
+                System.out.println("No .git was found in " + project.getRootProject().getRootDir()
+                        + ", or any parent directories of that directory.");
                 System.out.println("No version number generated.");
                 return "";
             }
 
-            Map<String, Object> openArgs = Map.of("currentDir", (Object)gitDir.getAbsolutePath());
-            Map<String, Object> describeArgs = Map.of("tags", (Object)allTags, "match", (Object)matchGlobs);
+            Map<String, Object> openArgs = Map.of("currentDir", (Object) gitDir.getAbsolutePath());
+            Map<String, Object> describeArgs = Map.of("tags", (Object) allTags, "match", (Object) matchGlobs);
 
             Grgit git = Grgit.open(openArgs);
             // Get the tag given by describe
@@ -116,14 +141,33 @@ public class GitVersionProvider implements WPILibVersionProvider {
 
             }
 
+            Set<String> nonAnnotatedTags = new HashSet<>();
+
+            if (tags != null) {
+                for (Tag tg : tags) {
+                    if (tg.getDateTime() == null) {
+                        nonAnnotatedTags.add(tg.getCommit().getId());
+                    }
+                }
+            }
+
+            if (!nonAnnotatedTags.isEmpty()) {
+                String failedCommits = String.join(",", nonAnnotatedTags);
+                throw this.problemReporter.throwing(builder -> builder
+                        .id("non-annotated-tag", "Repository with non annotated tags are not supported")
+                        .details("Commit hashes [" + failedCommits + "] have non annotated tag")
+                        .withException(new IllegalStateException("Commit hashes [" + failedCommits + "] have non annotated tag"))
+                        .solution("Please remove all annotated tags").severity(Severity.ERROR));
+            }
+
             // If we found the tag matching describe
             if (describeTag != null) {
                 String commitId = describeTag.getCommit().getId();
 
                 Tag newestTag = tags.stream()
-                    .filter(x -> x.getCommit().getId().equals(commitId))
-                    .sorted((x, y) -> x.getDateTime().compareTo(y.getDateTime()))
-                    .reduce(null, (x, y) -> y);
+                        .filter(x -> x.getCommit().getId().equals(commitId))
+                        .sorted((x, y) -> x.getDateTime().compareTo(y.getDateTime()))
+                        .reduce(null, (x, y) -> y);
 
                 // Replace describe tag with newest
                 tag = tag.replace(describeTag.getName(), newestTag.getName());
@@ -147,7 +191,8 @@ public class GitVersionProvider implements WPILibVersionProvider {
 
         versionBuilder.append(match.group(majorVersion));
 
-        // If this is a local build, we'll prepend 424242 to the minor version. This means that locally built versions will
+        // If this is a local build, we'll prepend 424242 to the minor version. This
+        // means that locally built versions will
         // always resolve first in the tree
         if (!extension.isBuildServerMode()) {
             versionBuilder.append(".424242");
@@ -159,13 +204,15 @@ public class GitVersionProvider implements WPILibVersionProvider {
             versionBuilder.append('-').append(match.group(qualifier));
         }
 
-        // For official builds, stop here. No date or repo status accounted for. Otherwise, keep appending new
+        // For official builds, stop here. No date or repo status accounted for.
+        // Otherwise, keep appending new
         // version elements
         if (extension.isReleaseMode())
             return versionBuilder.toString();
 
         // For jenkins builds, do not append the date
-        // This simplifies jenkins publishing because multiple commit builds can't happen.
+        // This simplifies jenkins publishing because multiple commit builds can't
+        // happen.
         if (!extension.isBuildServerMode()) {
             versionBuilder.append('-').append(extension.getTime().get());
         }
