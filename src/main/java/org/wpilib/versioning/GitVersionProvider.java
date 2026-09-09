@@ -110,44 +110,45 @@ public class GitVersionProvider implements WPILibVersionProvider {
                     return "";
                 }
 
-                Git git = Git.open(gitDir);
-                DescribeCommand describe = git.describe();
-                describe.setAlways(false);
-                describe.setLong(false);
-                describe.setTags(allTags);
-                describe.setMatch(matchGlobs.toArray(String[]::new));
-                tag = describe.call();
+                try (Git git = Git.open(gitDir)) {
+                    DescribeCommand describe = git.describe();
+                    describe.setAlways(false);
+                    describe.setLong(false);
+                    describe.setTags(allTags);
+                    describe.setMatch(matchGlobs.toArray(String[]::new));
+                    tag = describe.call();
 
-                List<GitTag> tags = git.tagList().call().stream().map(x -> GitTag.fromRef(git, x)).filter(x -> x != null).toList();
+                    List<GitTag> tags = git.tagList().call().stream().map(x -> GitTag.fromRef(git, x)).filter(x -> x != null).toList();
 
-                GitTag describeTag = null;
+                    GitTag describeTag = null;
 
-                if (tag != null && tags != null) {
-                    // Find tag hash that starts with describe
-                    for (GitTag tg : tags) {
-                        if (tag.startsWith(tg.getName())) {
-                            describeTag = tg;
-                            break;
+                    if (tag != null && tags != null) {
+                        // Find tag hash that starts with describe
+                        for (GitTag tg : tags) {
+                            if (tag.startsWith(tg.getName())) {
+                                describeTag = tg;
+                                break;
+                            }
                         }
+
                     }
 
+                    // If we found the tag matching describe
+                    if (describeTag != null) {
+
+                        String commitId = describeTag.getCommitId();
+
+                        GitTag newestTag = tags.stream()
+                                .filter(x -> x.getCommitId().equals(commitId))
+                                .sorted((x, y) -> x.getDateTime().compareTo(y.getDateTime()))
+                                .reduce(null, (x, y) -> y);
+
+                        // Replace describe tag with newest
+                        tag = tag.replace(describeTag.getName(), newestTag.getName());
+                    }
+
+                    isDirty = !git.status().call().isClean();
                 }
-
-                // If we found the tag matching describe
-                if (describeTag != null) {
-
-                    String commitId = describeTag.getCommitId();
-
-                    GitTag newestTag = tags.stream()
-                            .filter(x -> x.getCommitId().equals(commitId))
-                            .sorted((x, y) -> x.getDateTime().compareTo(y.getDateTime()))
-                            .reduce(null, (x, y) -> y);
-
-                    // Replace describe tag with newest
-                    tag = tag.replace(describeTag.getName(), newestTag.getName());
-                }
-
-                isDirty = !git.status().call().isClean();
             }
 
             Matcher match = null;

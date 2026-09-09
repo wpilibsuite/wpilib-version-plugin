@@ -20,7 +20,7 @@ repositories {
     }
 }
 
-version = '2027.0.1'
+version = '2027.0.2'
 group = 'org.wpilib'
 
 gradlePlugin {
