@@ -14,42 +14,30 @@ import java.util.regex.Pattern;
 
 public class GitVersionProvider implements WPILibVersionProvider {
     // A valid version string from git describe takes the form of
-    // v1.0.0-beta-2-1-gbd478ea, where
-    // everything after the v1.0.0 part is optional. Below, I break each piece out
-    // in it's own string, and then put
-    // the final regex together
+    // v2027.1-1.0-1-gbd478ea, where everything after v2027.1-1.0 is optional.
+    // The required version format is:
+    // v<year>.<imageBreaking>-<WPILibBreaking>.<WPILibNonBreaking>
+    // Breaking numbers start at 1 and nonbreaking numbers start at 0.
+    // Legacy YEAR.MAJOR.MINOR tags are migrated to YEAR.0-MAJOR.MINOR with a warning;
+    // any alpha/beta/rc qualifier is ignored.
 
-    // This is the only required part of the version. This captures a 'v', then 3
-    // numbers separated by '.'.
-    // This introduces a capturing group for the major version number called 'major'
-    // and the remainder called 'minor'.
-    static final String majorVersion = "major";
-    static final String minorVersion = "minor";
-    private static final String mainVersionRegex = "v(?<" + majorVersion + ">[0-9]+)(?<" + minorVersion
-            + ">\\.[0-9]+\\.[0-9]+)";
+    static final String year = "year";
+    static final String imageBreaking = "imageBreaking";
+    static final String WPILibBreaking = "WPILibBreaking";
+    static final String WPILibNonBreaking = "WPILibNonBreaking";
+
+    private static final String mainVersionRegex = "v(?<" + year + ">[1-9][0-9]{3})"
+            + "\\.(?<" + imageBreaking + ">[1-9][0-9]*)"
+            + "-(?<" + WPILibBreaking + ">[1-9][0-9]*)"
+            + "\\.(?<" + WPILibNonBreaking + ">(?:0|[1-9][0-9]*))";
 
     public static String getMainVersionRegex() {
         return mainVersionRegex;
     }
 
-    // This is the alpha/beta/rc qualifier. It is a '-', followed by 'alpha',
-    // 'beta', or 'rc', followed by another '-', finally
-    // followed by the alpha/beta/rc number. This introduces a capturing group for
-    // the qualifier number, called 'qualifier'.
-    static final String qualifier = "qualifier";
-    private static final String qualifierRegex = "-(?<" + qualifier + ">(alpha|beta|rc)-[0-9]+)";
-
-    public static String getQualifierRegex() {
-        return qualifierRegex;
-    }
-
     // This is the number of commits since the last annotated tag, and the commit
-    // hash of the latest commit. This is
-    // a '-', followed by a number, the number of commits, followed by a '-',
-    // followed by a 'g', followed by the git
-    // abbreviation of the hash of the current commit. This introduces 2 capturing
-    // groups, one for the number of
-    // commits, 'commits', and one for the commit hash, 'sha'.
+    // hash of the latest commit. This introduces two capturing groups, one for
+    // the number of commits, 'commits', and one for the commit hash, 'sha'.
     static final String commits = "commits";
     static final String sha = "sha";
     private static final String commitsRegex = "-(?<" + commits + ">[0-9]+)-(?<" + sha + ">g[a-f0-9]+)";
@@ -58,12 +46,28 @@ public class GitVersionProvider implements WPILibVersionProvider {
         return commitsRegex;
     }
 
-    // This is the final regex. mainVersion is the only element that is required.
-    // Each subpart, if it shows up, must
-    // show up in full. A fully expanded version of the regex is copied below:
-    // ^v(?<major>[0-9]+)(?<minor>\.[0-9]+\.[0-9]+)(-(?<qualifier>(alpha|beta|rc)-[0-9]+))?(-(?<commits>[0-9]+)-(?<sha>g[a-f0-9]+))?$
+    // Legacy WPILib tags use YEAR.MAJOR.MINOR. They are migrated to
+    // YEAR.0-MAJOR.MINOR so existing tags keep working until a new-format tag is created.
+    static final String legacyMajor = "major";
+    static final String legacyMinor = "minor";
+    static final String legacyQualifier = "legacyQualifier";
+    private static final String legacyMainVersionRegex = "v(?<" + year + ">[1-9][0-9]{3})"
+            + "\\.(?<" + legacyMajor + ">(?:0|[1-9][0-9]*))"
+            + "\\.(?<" + legacyMinor + ">(?:0|[1-9][0-9]*))";
+    private static final String legacyQualifierRegex = "-(?<" + legacyQualifier + ">(alpha|beta|rc)-[0-9]+)";
+
+    static final Pattern legacyVersionRegex = Pattern
+            .compile("^" + legacyMainVersionRegex + "(" + legacyQualifierRegex + ")?" + "(" + commitsRegex + ")?$");
+
+    public static Pattern getLegacyVersionRegex() {
+        return legacyVersionRegex;
+    }
+
+    // This is the final regex. The main version is the only required element.
+    // A fully expanded version of the regex is copied below:
+    // ^v(?<year>[1-9][0-9]{3})\.(?<imageBreaking>[1-9][0-9]*)-(?<WPILibBreaking>[1-9][0-9]*)\.(?<WPILibNonBreaking>(?:0|[1-9][0-9]*))(-(?<commits>[0-9]+)-(?<sha>g[a-f0-9]+))?$
     static final Pattern versionRegex = Pattern
-            .compile("^" + mainVersionRegex + "(" + qualifierRegex + ")?(" + commitsRegex + ")?$");
+            .compile("^" + mainVersionRegex + "(" + commitsRegex + ")?$");
 
     public static Pattern getVersionRegex() {
         return versionRegex;
@@ -151,54 +155,74 @@ public class GitVersionProvider implements WPILibVersionProvider {
             }
 
             Matcher match = null;
+            boolean isLegacy = false;
             if (tag != null) {
                 match = versionRegex.matcher(tag);
+                if (!match.matches()) {
+                    Matcher legacyMatch = legacyVersionRegex.matcher(tag);
+                    if (legacyMatch.matches()) {
+                        match = legacyMatch;
+                        isLegacy = true;
+                    } else {
+                        match = null;
+                    }
+                }
             }
 
-            if (match == null || !match.matches()) {
+            if (match == null) {
                 System.out.println("Tag is " + tag + ". This does not match the expected version number pattern.");
                 System.out.println("No version number was generated.");
                 return "";
             }
 
+            String resolvedYear = match.group(year);
+            String resolvedImageBreaking = isLegacy ? "0" : match.group(imageBreaking);
+            String resolvedWPILibBreaking = isLegacy ? match.group(legacyMajor) : match.group(WPILibBreaking);
+            String resolvedWPILibNonBreaking = isLegacy ? match.group(legacyMinor) : match.group(WPILibNonBreaking);
+
             StringBuilder versionBuilder = new StringBuilder();
 
-            versionBuilder.append(match.group(majorVersion));
+            versionBuilder.append(resolvedYear)
+                    .append('.').append(resolvedImageBreaking);
 
-            // If this is a local build, we'll prepend 424242 to the minor version. This
-            // means that locally built versions will
-            // always resolve first in the tree
+            // If this is a local build, insert 424242 after the image-breaking separator.
+            // This means that locally built versions will always resolve first in the tree.
             if (!extension.isBuildServerMode()) {
-                versionBuilder.append(".424242");
+                versionBuilder.append("-424242.");
+            } else {
+                versionBuilder.append('-');
             }
 
-            versionBuilder.append(match.group(minorVersion));
-
-            if (match.group(qualifier) != null) {
-                versionBuilder.append('-').append(match.group(qualifier));
-            }
+            versionBuilder.append(resolvedWPILibBreaking)
+                    .append('.').append(resolvedWPILibNonBreaking);
 
             // For official builds, stop here. No date or repo status accounted for.
-            // Otherwise, keep appending new
-            // version elements
-            if (extension.isReleaseMode())
-                return versionBuilder.toString();
+            // Otherwise, keep appending new version elements.
+            if (!extension.isReleaseMode()) {
+                // Build-server builds omit the date.
+                // This simplifies publishing because multiple commit builds can't happen.
+                if (!extension.isBuildServerMode()) {
+                    versionBuilder.append('-').append(extension.getTime().get());
+                }
 
-            // For jenkins builds, do not append the date
-            // This simplifies jenkins publishing because multiple commit builds can't
-            // happen.
-            if (!extension.isBuildServerMode()) {
-                versionBuilder.append('-').append(extension.getTime().get());
+                if (match.group(commits) != null && match.group(sha) != null)
+                    versionBuilder.append('-').append(match.group(commits))
+                            .append('-').append(match.group(sha));
+
+                if (isDirty)
+                    versionBuilder.append("-dirty");
             }
 
-            if (match.group(commits) != null && match.group(sha) != null)
-                versionBuilder.append('-').append(match.group(commits))
-                        .append('-').append(match.group(sha));
+            String generatedVersion = versionBuilder.toString();
 
-            if (isDirty)
-                versionBuilder.append("-dirty");
+            if (isLegacy) {
+                System.out.println("Warning: Tag " + tag + " uses the old YEAR.MAJOR.MINOR format. "
+                        + "Migration to the new tag format "
+                        + "v<year>.<imageBreaking>-<WPILibBreaking>.<WPILibNonBreaking> is needed. "
+                        + "Generated version: " + generatedVersion);
+            }
 
-            return versionBuilder.toString();
+            return generatedVersion;
         } catch (IOException | GitAPIException | InvalidPatternException e) {
             throw new RuntimeException("Error determining git version", e);
         }
