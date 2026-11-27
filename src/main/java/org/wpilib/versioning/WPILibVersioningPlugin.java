@@ -4,8 +4,8 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
 /**
- * Determines the remote WPILib repository to use as well as determining the version of published artifacts. This is
- * determined based on git
+ * Generates WPILib-compatible project versions from git tags and exposes them through the
+ * {@code wpilibVersioning} extension.
  */
 public class WPILibVersioningPlugin implements Plugin<Project> {
     @Override
